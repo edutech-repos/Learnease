@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Zap, Mail, Lock, Chrome } from 'lucide-react';
+import { Zap, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
 
 interface AuthenticationProps {
@@ -267,52 +267,6 @@ export function Authentication({ onLogin }: AuthenticationProps) {
               <p>📧 <span className="text-[#06B6D4]">premium@spark.com</span> (Pass: 123)</p>
               <p>📧 <span className="text-gray-300">free@spark.com</span> (Pass: 123)</p>
             </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#312E81] to-transparent" />
-              <span className="text-gray-500 text-sm">OR</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#312E81] to-transparent" />
-            </div>
-
-            {/* Social Auth */}
-            <motion.button
-              type="button"
-              className="w-full py-3 bg-transparent border-2 border-[#06B6D4] rounded-xl text-[#06B6D4] flex items-center justify-center gap-2 relative overflow-hidden group"
-              whileHover={{ 
-                scale: 1.02,
-                boxShadow: '0 0 20px rgba(6, 182, 212, 0.5)'
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Chrome className="w-5 h-5" />
-              <span>Continue with Google</span>
-              
-              {/* Spark Effect */}
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-              >
-                {[...Array(4)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 rounded-full bg-[#FBBF24]"
-                    animate={{
-                      opacity: [0, 1, 0],
-                      scale: [0, 2, 0],
-                      x: Math.cos((i * Math.PI * 2) / 4) * 30,
-                      y: Math.sin((i * Math.PI * 2) / 4) * 30
-                    }}
-                    transition={{
-                      duration: 0.6,
-                      repeat: Infinity,
-                      delay: i * 0.15
-                    }}
-                  />
-                ))}
-              </motion.div>
-            </motion.button>
           </form>
         </motion.div>
       </div>

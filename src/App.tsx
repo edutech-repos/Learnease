@@ -6,8 +6,12 @@ import { MyLessons } from './components/MyLessons';
 import { History } from './components/History';
 import { Settings } from './components/Settings';
 import { ProfileOverlay } from './components/ProfileOverlay';
+import { ContentReview } from './components/ContentReview';
+import { QuizInterface } from './components/QuizInterface';
+import { ComparisonCards } from './components/ComparisonCards';
+import { TrendingTopicView } from './components/TrendingTopicView';
 
-type Screen = 'auth' | 'dashboard' | 'lessons' | 'history' | 'settings';
+type Screen = 'auth' | 'dashboard' | 'lessons' | 'history' | 'settings' | 'content-review' | 'quiz' | 'comparison' | 'trending-topic';
 type UserType = 'premium' | 'free' | null;
 
 export default function App() {
@@ -15,6 +19,8 @@ export default function App() {
   const [userType, setUserType] = useState<UserType>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [userName, setUserName] = useState('');
+  const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
+  const [selectedTrendingTopic, setSelectedTrendingTopic] = useState<any>(null);
 
   const handleLogin = (email: string) => {
     if (email === 'premium@spark.com') {
@@ -32,6 +38,37 @@ export default function App() {
     setUserName('');
     setCurrentScreen('auth');
     setShowProfile(false);
+    setCurrentLessonId(null);
+  };
+
+  const handleViewLesson = (lessonId: number) => {
+    setCurrentLessonId(lessonId);
+    setCurrentScreen('content-review');
+  };
+
+  const handleStartQuiz = (lessonId: number) => {
+    setCurrentLessonId(lessonId);
+    setCurrentScreen('quiz');
+  };
+
+  const handleQuizComplete = () => {
+    setCurrentScreen('lessons');
+    setCurrentLessonId(null);
+  };
+
+  const handleIgniteLesson = () => {
+    // Navigate to content review with a mock lesson ID
+    setCurrentLessonId(1);
+    setCurrentScreen('content-review');
+  };
+
+  const handleShowComparison = () => {
+    setCurrentScreen('comparison');
+  };
+
+  const handleShowTrendingTopic = (topic: any) => {
+    setSelectedTrendingTopic(topic);
+    setCurrentScreen('trending-topic');
   };
 
   return (
@@ -46,6 +83,8 @@ export default function App() {
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
+          onIgniteLesson={handleIgniteLesson}
+          onShowComparison={handleShowComparison}
         />
       )}
 
@@ -55,6 +94,9 @@ export default function App() {
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
+          onIgniteLesson={handleIgniteLesson}
+          onShowComparison={handleShowComparison}
+          onViewTrendingTopic={handleShowTrendingTopic}
         />
       )}
 
@@ -65,6 +107,37 @@ export default function App() {
           onLogout={handleLogout}
           userName={userName}
           userType={userType}
+          onViewLesson={handleViewLesson}
+          onStartQuiz={handleStartQuiz}
+        />
+      )}
+
+      {currentScreen === 'content-review' && currentLessonId && (
+        <ContentReview
+          lessonId={currentLessonId}
+          onBack={() => {
+            setCurrentScreen('lessons');
+            setCurrentLessonId(null);
+          }}
+          onStartQuiz={() => handleStartQuiz(currentLessonId)}
+        />
+      )}
+
+      {currentScreen === 'quiz' && currentLessonId && (
+        <QuizInterface
+          lessonId={currentLessonId}
+          onBack={() => setCurrentScreen('lessons')}
+          onComplete={handleQuizComplete}
+        />
+      )}
+
+      {currentScreen === 'comparison' && (
+        <ComparisonCards
+          onClose={() => setCurrentScreen('dashboard')}
+          onUpgrade={() => {
+            // Handle upgrade action
+            alert('Upgrade functionality would be implemented here');
+          }}
         />
       )}
 
@@ -88,11 +161,19 @@ export default function App() {
         />
       )}
 
-      {showProfile && (
+      {showProfile && userType && (
         <ProfileOverlay 
           userName={userName}
           userType={userType}
           onClose={() => setShowProfile(false)}
+          onShowComparison={handleShowComparison}
+        />
+      )}
+
+      {currentScreen === 'trending-topic' && (
+        <TrendingTopicView
+          topic={selectedTrendingTopic}
+          onClose={() => setCurrentScreen('dashboard')}
         />
       )}
     </div>

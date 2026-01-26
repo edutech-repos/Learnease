@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { BookOpen, Play, Clock, TrendingUp } from 'lucide-react';
+import { Eye, Gamepad2 } from 'lucide-react';
 import { NavigationLayout } from './NavigationLayout';
 
 interface MyLessonsProps {
@@ -8,48 +8,58 @@ interface MyLessonsProps {
   onNavigate: (screen: any) => void;
   onShowProfile: () => void;
   onLogout: () => void;
+  onViewLesson?: (lessonId: number) => void;
+  onStartQuiz?: (lessonId: number) => void;
 }
 
-export function MyLessons({ userName, userType, onNavigate, onShowProfile, onLogout }: MyLessonsProps) {
+export function MyLessons({ 
+  userName, 
+  userType, 
+  onNavigate, 
+  onShowProfile, 
+  onLogout,
+  onViewLesson,
+  onStartQuiz 
+}: MyLessonsProps) {
   const lessons = [
     {
       id: 1,
-      title: 'Understanding Photosynthesis',
-      subject: 'Biology',
-      icon: '🌱',
-      date: 'Today',
-      duration: '15 min',
-      progress: 100,
-      color: '#10B981'
-    },
-    {
-      id: 2,
-      title: 'Newton\'s Laws of Motion',
+      title: 'Introduction to Thermodynamics',
       subject: 'Physics',
-      icon: '🚀',
-      date: 'Yesterday',
-      duration: '22 min',
-      progress: 75,
+      icon: '🔥',
+      quizTaken: true,
+      score: 4,
+      total: 5,
       color: '#06B6D4'
     },
     {
+      id: 2,
+      title: 'Photosynthesis & Plant Biology',
+      subject: 'Biology',
+      icon: '🌱',
+      quizTaken: true,
+      score: 5,
+      total: 5,
+      color: '#10B981'
+    },
+    {
       id: 3,
-      title: 'French Revolution Overview',
+      title: 'The French Revolution',
       subject: 'History',
-      icon: '📚',
-      date: '2 days ago',
-      duration: '18 min',
-      progress: 100,
+      icon: '🇫🇷',
+      quizTaken: true,
+      score: 5,
+      total: 5,
       color: '#F472B6'
     },
     {
       id: 4,
-      title: 'Quadratic Equations',
+      title: 'Quadratic Equations Fundamentals',
       subject: 'Mathematics',
       icon: '📐',
-      date: '3 days ago',
-      duration: '25 min',
-      progress: 50,
+      quizTaken: true,
+      score: 3,
+      total: 5,
       color: '#FBBF24'
     },
     {
@@ -57,10 +67,20 @@ export function MyLessons({ userName, userType, onNavigate, onShowProfile, onLog
       title: 'Python Functions & Methods',
       subject: 'Programming',
       icon: '🐍',
-      date: '5 days ago',
-      duration: '30 min',
-      progress: 30,
+      quizTaken: true,
+      score: 3,
+      total: 5,
       color: '#8B5CF6'
+    },
+    {
+      id: 6,
+      title: 'Shakespeare\'s Tragedies',
+      subject: 'Literature',
+      icon: '📚',
+      quizTaken: true,
+      score: 4,
+      total: 5,
+      color: '#EC4899'
     }
   ];
 
@@ -73,92 +93,90 @@ export function MyLessons({ userName, userType, onNavigate, onShowProfile, onLog
       onShowProfile={onShowProfile}
       onLogout={onLogout}
     >
-      <div className="p-4 lg:p-8 max-w-5xl mx-auto">
-        <div className="mb-6">
-          <h2 className="text-2xl lg:text-3xl text-white mb-2">My Lessons 📖</h2>
+      <div className="p-4 lg:p-8 max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-2xl lg:text-3xl text-white mb-2">Your Knowledge Vault ⚡️</h2>
           <p className="text-gray-400 text-sm lg:text-base">
-            {lessons.length} lessons generated • Continue where you left off
+            {lessons.length} lessons generated • Review notes or test your knowledge
           </p>
         </div>
 
-        {/* Lessons List */}
-        <div className="space-y-4">
+        {/* Lessons Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {lessons.map((lesson, idx) => (
             <motion.div
               key={lesson.id}
-              className="bg-[#312E81] rounded-xl p-5 lg:p-6 border border-[#06B6D4]/30 hover:border-[#06B6D4] transition-all group cursor-pointer"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              className="bg-[#312E81] rounded-xl p-6 border-2 border-[#06B6D4]/30 hover:border-[#06B6D4] transition-all relative overflow-hidden group"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              whileHover={{ scale: 1.01, x: 5 }}
             >
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                {/* Icon & Subject */}
-                <div className="flex items-center gap-4 flex-1">
+              {/* Background Glow */}
+              <motion.div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: `radial-gradient(circle at top right, ${lesson.color}15, transparent 70%)`
+                }}
+              />
+
+              <div className="relative z-10">
+                {/* Icon & Subject Badge */}
+                <div className="flex items-start justify-between mb-4">
                   <motion.div
-                    className="w-16 h-16 rounded-xl bg-[#1E1B4B] flex items-center justify-center text-3xl border-2 border-transparent group-hover:border-[#06B6D4] transition-colors"
+                    className="w-14 h-14 rounded-xl bg-[#1E1B4B] flex items-center justify-center text-3xl border-2 border-transparent group-hover:border-[#06B6D4]/50 transition-colors"
                     whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.6 }}
                   >
                     {lesson.icon}
                   </motion.div>
 
-                  <div className="flex-1">
-                    <h3 className="text-white mb-1 group-hover:text-[#06B6D4] transition-colors">
-                      {lesson.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <span className="text-gray-400">{lesson.subject}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-600" />
-                      <span className="text-gray-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {lesson.duration}
+                  {/* Status Badge */}
+                  {lesson.quizTaken ? (
+                    <div className="px-3 py-1.5 bg-[#10B981]/20 border border-[#10B981] rounded-full flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                      <span className="text-sm text-[#10B981]">
+                        Score: {lesson.score}/{lesson.total}
                       </span>
-                      <span className="w-1 h-1 rounded-full bg-gray-600" />
-                      <span className="text-gray-500">{lesson.date}</span>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="px-3 py-1.5 bg-[#FBBF24]/20 border border-[#FBBF24] rounded-full flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-[#FBBF24] animate-pulse" />
+                      <span className="text-sm text-[#FBBF24]">Pending Quiz</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Progress & Action */}
-                <div className="flex items-center gap-4">
-                  {/* Progress Circle */}
-                  <div className="relative w-12 h-12">
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="20"
-                        fill="none"
-                        stroke="#1E1B4B"
-                        strokeWidth="4"
-                      />
-                      <motion.circle
-                        cx="24"
-                        cy="24"
-                        r="20"
-                        fill="none"
-                        stroke={lesson.color}
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: lesson.progress / 100 }}
-                        transition={{ duration: 1, delay: idx * 0.1 }}
-                        style={{
-                          filter: `drop-shadow(0 0 5px ${lesson.color})`
-                        }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-xs text-white">
-                      {lesson.progress}%
-                    </div>
-                  </div>
+                {/* Title & Subject */}
+                <h3 className="text-white text-lg mb-2 group-hover:text-[#06B6D4] transition-colors">
+                  {lesson.title}
+                </h3>
+                <p className="text-gray-400 text-sm mb-5">{lesson.subject}</p>
 
-                  {/* Study Button */}
+                {/* Action Buttons */}
+                <div className="flex gap-3">
                   <motion.button
-                    className="px-6 py-2.5 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] rounded-lg text-white flex items-center gap-2 relative overflow-hidden group/btn"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onViewLesson?.(lesson.id)}
+                    className="flex-1 py-2.5 bg-[#1E1B4B] border-2 border-[#06B6D4]/50 rounded-lg text-[#06B6D4] flex items-center justify-center gap-2 relative overflow-hidden group/btn"
+                    whileHover={{ 
+                      scale: 1.02,
+                      borderColor: '#06B6D4',
+                      boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)'
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="text-sm">Review Notes</span>
+                  </motion.button>
+
+                  <motion.button
+                    onClick={() => onStartQuiz?.(lesson.id)}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-lg text-white flex items-center justify-center gap-2 relative overflow-hidden group/btn"
+                    whileHover={{ 
+                      scale: 1.02,
+                      boxShadow: '0 0 20px rgba(244, 114, 182, 0.5)'
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <motion.div
                       className="absolute inset-0 bg-white/20"
@@ -166,80 +184,61 @@ export function MyLessons({ userName, userType, onNavigate, onShowProfile, onLog
                       whileHover={{ x: '100%' }}
                       transition={{ duration: 0.5 }}
                     />
-                    <Play className="w-4 h-4" fill="white" />
-                    <span className="relative">
-                      {lesson.progress === 100 ? 'Review' : 'Continue'}
+                    <Gamepad2 className="w-4 h-4 relative z-10" />
+                    <span className="text-sm relative z-10">
+                      {lesson.quizTaken ? 'Retake Quiz' : 'Attempt Quiz'}
                     </span>
                   </motion.button>
                 </div>
               </div>
 
-              {/* Progress Bar (Mobile) */}
-              <div className="mt-4 lg:hidden">
-                <div className="h-1.5 bg-[#1E1B4B] rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: lesson.color }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${lesson.progress}%` }}
-                    transition={{ duration: 1, delay: idx * 0.1 }}
-                  />
-                </div>
-              </div>
+              {/* Corner Accent */}
+              <motion.div
+                className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full opacity-20"
+                style={{ backgroundColor: lesson.color }}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.3, 0.2]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
             </motion.div>
           ))}
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
-          <motion.div
-            className="bg-[#312E81] rounded-xl p-5 border border-[#10B981]/30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-[#10B981]/20 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-[#10B981]" />
+        {/* Stats Summary */}
+        <motion.div
+          className="mt-8 bg-[#312E81] rounded-xl p-6 border border-[#06B6D4]/30"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl text-[#10B981] mb-1">
+                {lessons.filter(l => l.quizTaken).length}
               </div>
-              <h4 className="text-white">Completed</h4>
+              <div className="text-gray-400 text-sm">Quizzes Completed</div>
             </div>
-            <p className="text-3xl text-[#10B981]">3</p>
-            <p className="text-sm text-gray-400 mt-1">Lessons finished</p>
-          </motion.div>
-
-          <motion.div
-            className="bg-[#312E81] rounded-xl p-5 border border-[#FBBF24]/30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-[#FBBF24]/20 rounded-lg">
-                <Clock className="w-5 h-5 text-[#FBBF24]" />
+            <div className="text-center">
+              <div className="text-3xl text-[#FBBF24] mb-1">
+                {lessons.filter(l => !l.quizTaken).length}
               </div>
-              <h4 className="text-white">In Progress</h4>
+              <div className="text-gray-400 text-sm">Pending Quizzes</div>
             </div>
-            <p className="text-3xl text-[#FBBF24]">2</p>
-            <p className="text-sm text-gray-400 mt-1">Keep going!</p>
-          </motion.div>
-
-          <motion.div
-            className="bg-[#312E81] rounded-xl p-5 border border-[#F472B6]/30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-[#F472B6]/20 rounded-lg">
-                <BookOpen className="w-5 h-5 text-[#F472B6]" />
+            <div className="text-center">
+              <div className="text-3xl text-[#F472B6] mb-1">
+                {Math.round(
+                  lessons
+                    .filter(l => l.quizTaken)
+                    .reduce((acc, l) => acc + (l.score! / l.total!) * 100, 0) /
+                    lessons.filter(l => l.quizTaken).length
+                )}%
               </div>
-              <h4 className="text-white">Total Time</h4>
+              <div className="text-gray-400 text-sm">Average Score</div>
             </div>
-            <p className="text-3xl text-[#F472B6]">110</p>
-            <p className="text-sm text-gray-400 mt-1">Minutes learned</p>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </NavigationLayout>
   );

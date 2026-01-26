@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Upload, Flame, Lock, Sparkles } from 'lucide-react';
+import { CloudUpload, Zap, Flame, Lock, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
 
@@ -8,10 +8,66 @@ interface DashboardFreeProps {
   onNavigate: (screen: any) => void;
   onShowProfile: () => void;
   onLogout: () => void;
+  onIgniteLesson?: () => void;
+  onShowComparison?: () => void;
+  onViewTrendingTopic?: (topic: any) => void;
 }
 
-export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout }: DashboardFreeProps) {
+export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, onIgniteLesson, onShowComparison, onViewTrendingTopic }: DashboardFreeProps) {
+  const [textInput, setTextInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string>('');
+
+  const maxChars = 1000; // Free user limit
+  const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
+  const isAtLimit = textInput.length >= maxChars;
+
+  const handleFileSelect = (e: React.DragEvent | React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setUploadError('');
+
+    let file: File | null = null;
+
+    if ('dataTransfer' in e) {
+      // Drag and drop event
+      file = e.dataTransfer.files[0];
+    } else if ('target' in e && e.target.files) {
+      // File input event
+      file = e.target.files[0];
+    }
+
+    if (file) {
+      // Validate file size
+      if (file.size > maxFileSize) {
+        setUploadError(`File size exceeds 10 MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)} MB.`);
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!allowedTypes.includes(file.type)) {
+        setUploadError('Only PDF, DOCX, and TXT files are supported.');
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (e.target.value.length <= maxChars) {
+      setTextInput(e.target.value);
+    }
+  };
+
+  const handleIgniteLesson = () => {
+    if (textInput.length > 0 || selectedFile) {
+      onIgniteLesson?.();
+    }
+  };
 
   const trendingTopics = [
     { title: 'Quantum Physics 101', icon: '⚛️', students: '12.3k', difficulty: 'Advanced' },
@@ -32,48 +88,121 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout }:
       onLogout={onLogout}
     >
       <div className="p-4 lg:p-8 max-w-6xl mx-auto">
-        {/* Hero Upload Section */}
-        <motion.div
-          className={`relative bg-[#312E81] rounded-2xl p-6 lg:p-10 mb-8 border-2 transition-all ${
-            isDragging 
-              ? 'border-solid border-[#10B981] glow-green' 
-              : 'border-dashed border-[#06B6D4] glow-cyan'
-          }`}
-          onDragEnter={() => setIsDragging(true)}
-          onDragLeave={() => setIsDragging(false)}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-          }}
-          whileHover={{ scale: 1.01 }}
-        >
-          <div className="flex flex-col items-center text-center">
-            <motion.div
-              animate={{ 
-                y: [0, -10, 0],
-                filter: [
-                  'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))',
-                  'drop-shadow(0 0 20px rgba(6, 182, 212, 0.8))',
-                  'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))'
-                ]
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              <Upload className="w-16 h-16 lg:w-20 lg:h-20 text-[#06B6D4] mb-4" />
-            </motion.div>
-            <h2 className="text-xl lg:text-2xl text-white mb-2">Drag & Drop your PDF here to spark knowledge!</h2>
-            <p className="text-gray-400 text-sm lg:text-base mb-1">Support for PDF, DOCX, TXT files up to 10MB</p>
-            <p className="text-[#FBBF24] text-xs lg:text-sm mb-6">5 lessons remaining this month</p>
-            <motion.button
-              className="px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] rounded-xl text-white glow-cyan"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Browse Files
-            </motion.button>
+        {/* Hero Split Input Zone */}
+        <div className="mb-8">
+          {/* Top Half - PDF Upload Area */}
+          <motion.div
+            className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all ${
+              isDragging 
+                ? 'border-solid border-[#06B6D4] glow-cyan' 
+                : 'border-dashed border-[#06B6D4]/60'
+            }`}
+            onDragEnter={() => setIsDragging(true)}
+            onDragLeave={() => setIsDragging(false)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileSelect}
+            whileHover={{ borderColor: '#06B6D4' }}
+          >
+            <div className="flex flex-col items-center text-center">
+              <motion.div
+                animate={{ 
+                  y: [0, -10, 0],
+                  filter: [
+                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))',
+                    'drop-shadow(0 0 20px rgba(6, 182, 212, 0.8))',
+                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))'
+                  ]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <CloudUpload className="w-16 h-16 lg:w-20 lg:h-20 text-[#06B6D4] mb-4" />
+              </motion.div>
+              <p className="text-lg lg:text-xl text-gray-300">Drop PDF here</p>
+              <p className="text-[#FBBF24] text-xs lg:text-sm mt-2">5 lessons remaining this month</p>
+            </div>
+          </motion.div>
+
+          {/* Divider - OR - with lightning */}
+          <div className="relative flex items-center justify-center py-4 bg-[#312E81]">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#06B6D4]/20 to-transparent"></div>
+            <div className="relative flex items-center gap-3 text-[#06B6D4]">
+              <Zap className="w-5 h-5" fill="#06B6D4" />
+              <span className="text-lg tracking-wider text-glow-cyan">- OR -</span>
+              <Zap className="w-5 h-5" fill="#06B6D4" />
+            </div>
           </div>
-        </motion.div>
+
+          {/* Bottom Half - Text Input Area */}
+          <motion.div
+            className={`relative bg-[#312E81] rounded-b-2xl p-6 lg:p-8 border-2 border-t-0 transition-all ${
+              isAtLimit 
+                ? 'border-[#EF4444] glow-red' 
+                : isFocused 
+                  ? 'border-[#06B6D4] glow-cyan' 
+                  : 'border-[#06B6D4]/30'
+            }`}
+            animate={isAtLimit ? {
+              boxShadow: [
+                '0 0 20px rgba(239, 68, 68, 0.6)',
+                '0 0 40px rgba(239, 68, 68, 0.8)',
+                '0 0 20px rgba(239, 68, 68, 0.6)'
+              ]
+            } : undefined}
+            transition={isAtLimit ? { duration: 1, repeat: Infinity } : undefined}
+          >
+            <textarea
+              value={textInput}
+              onChange={handleTextChange}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="Paste your study text here (up to 1,000 chars for free users)..."
+              className="w-full h-48 lg:h-64 bg-[#1E1B4B] rounded-xl p-4 text-white placeholder-gray-500 resize-none focus:outline-none border-2 border-transparent focus:border-[#06B6D4]/50 transition-all"
+              style={{
+                filter: isFocused ? 'drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))' : 'none'
+              }}
+            />
+            
+            {/* Character Counter */}
+            <div className="mt-3 flex justify-end">
+              <motion.span
+                className={`text-sm ${
+                  isAtLimit 
+                    ? 'text-[#EF4444]' 
+                    : textInput.length > 0 
+                      ? 'text-[#FBBF24]' 
+                      : 'text-gray-500'
+                }`}
+                animate={isAtLimit ? {
+                  scale: [1, 1.1, 1]
+                } : undefined}
+                transition={isAtLimit ? { duration: 0.5, repeat: Infinity } : undefined}
+              >
+                {textInput.length} / {maxChars} chars
+              </motion.span>
+            </div>
+          </motion.div>
+
+          {/* Primary Action Button */}
+          <motion.button
+            className="w-full mt-6 py-4 bg-gradient-to-r from-[#06B6D4] via-[#3B82F6] to-[#8B5CF6] rounded-2xl text-white text-lg relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+            whileHover={{ scale: textInput.length > 0 || isDragging ? 1.02 : 1 }}
+            whileTap={{ scale: textInput.length > 0 || isDragging ? 0.98 : 1 }}
+            disabled={textInput.length === 0 && !selectedFile}
+            onClick={handleIgniteLesson}
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+              animate={{
+                x: ['-100%', '100%']
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            />
+            <span className="relative flex items-center justify-center gap-2">
+              <span>Ignite Lesson</span>
+              <span>🚀</span>
+            </span>
+          </motion.button>
+        </div>
 
         {/* Upsell Banner */}
         <motion.div
@@ -163,6 +292,7 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout }:
                   borderColor: '#06B6D4',
                   boxShadow: '0 0 20px rgba(6, 182, 212, 0.5)'
                 }}
+                onClick={() => onViewTrendingTopic?.(topic)}
               >
                 {/* Hover Glow Effect */}
                 <motion.div
@@ -215,16 +345,9 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout }:
                     <motion.div
                       key={i}
                       className="absolute w-1 h-1 rounded-full bg-[#FBBF24]"
-                      animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1.5, 0],
-                        x: Math.cos((i * Math.PI * 2) / 4) * 15,
-                        y: Math.sin((i * Math.PI * 2) / 4) * 15
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        delay: i * 0.2
+                      style={{
+                        opacity: 0,
+                        scale: 0
                       }}
                     />
                   ))}
@@ -251,6 +374,7 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout }:
               boxShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
             }}
             whileTap={{ scale: 0.95 }}
+            onClick={onShowComparison}
           >
             <Lock className="w-4 h-4" />
             <span>Explore Premium Features</span>

@@ -5,9 +5,10 @@ interface ProfileOverlayProps {
   userName: string;
   userType: 'premium' | 'free' | null;
   onClose: () => void;
+  onShowComparison?: () => void;
 }
 
-export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayProps) {
+export function ProfileOverlay({ userName, userType, onClose, onShowComparison }: ProfileOverlayProps) {
   return (
     <motion.div
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
@@ -46,7 +47,7 @@ export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayPr
                   '0 0 20px rgba(6, 182, 212, 0.5)'
                 ]
               }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: 999999 }}
             >
               <div className="w-full h-full rounded-full bg-[#312E81] flex items-center justify-center">
                 <User className="w-12 h-12 text-[#FBBF24]" />
@@ -107,7 +108,7 @@ export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayPr
                 <motion.div
                   className="mt-2 text-xs text-[#FBBF24]"
                   animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  transition={{ duration: 2, repeat: 999999 }}
                 >
                   Running low!
                 </motion.div>
@@ -207,6 +208,10 @@ export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayPr
             ) : (
               <>
                 <motion.button
+                  onClick={() => {
+                    onClose();
+                    onShowComparison?.();
+                  }}
                   className="w-full py-3 bg-gradient-to-r from-[#FBBF24] to-[#F59E0B] rounded-xl text-[#1E1B4B] flex items-center justify-center gap-2 relative overflow-hidden group"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -220,7 +225,7 @@ export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayPr
                         '0 0 0 0 rgba(251, 191, 36, 0)'
                       ]
                     }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    transition={{ duration: 1.5, repeat: 999999 }}
                   />
                   <Crown className="w-5 h-5" />
                   <span className="relative">Upgrade to Premium</span>
@@ -260,7 +265,7 @@ export function ProfileOverlay({ userName, userType, onClose }: ProfileOverlayPr
             }}
             transition={{
               duration: 3,
-              repeat: Infinity,
+              repeat: 999999,
               delay: Math.random() * 3
             }}
           />
