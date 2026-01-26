@@ -11,6 +11,7 @@ export function ComparisonCards({ onClose, onUpgrade }: ComparisonCardsProps) {
     { name: 'Lesson Credits', free: '5 per month', premium: 'Unlimited' },
     { name: 'Character Limit', free: '1,000 chars', premium: '4,000 chars' },
     { name: 'File Upload Size', free: '10 MB', premium: '10 MB' },
+    { name: 'AI Diagram Generation', free: '5 per week', premium: '30 per week' },
     { name: 'AI Quiz Generation', free: 'Basic', premium: 'Advanced' },
     { name: 'Weakness Analysis', free: false, premium: true },
     { name: 'Personalized Learning Paths', free: false, premium: true },

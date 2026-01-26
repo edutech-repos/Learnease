@@ -78,7 +78,7 @@ export default function App() {
       )}
 
       {currentScreen === 'dashboard' && userType === 'premium' && (
-        <DashboardPremium 
+        <DashboardPremium
           userName={userName}
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
@@ -89,7 +89,7 @@ export default function App() {
       )}
 
       {currentScreen === 'dashboard' && userType === 'free' && (
-        <DashboardFree 
+        <DashboardFree
           userName={userName}
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
@@ -101,7 +101,7 @@ export default function App() {
       )}
 
       {currentScreen === 'lessons' && (
-        <MyLessons 
+        <MyLessons
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
@@ -115,6 +115,7 @@ export default function App() {
       {currentScreen === 'content-review' && currentLessonId && (
         <ContentReview
           lessonId={currentLessonId}
+          userType={userType}
           onBack={() => {
             setCurrentScreen('lessons');
             setCurrentLessonId(null);
@@ -142,7 +143,7 @@ export default function App() {
       )}
 
       {currentScreen === 'history' && (
-        <History 
+        <History
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
@@ -152,7 +153,7 @@ export default function App() {
       )}
 
       {currentScreen === 'settings' && (
-        <Settings 
+        <Settings
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
@@ -162,7 +163,7 @@ export default function App() {
       )}
 
       {showProfile && userType && (
-        <ProfileOverlay 
+        <ProfileOverlay
           userName={userName}
           userType={userType}
           onClose={() => setShowProfile(false)}

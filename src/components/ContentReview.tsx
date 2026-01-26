@@ -1,13 +1,19 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Image, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface ContentReviewProps {
   lessonId: number;
   onBack: () => void;
   onStartQuiz: () => void;
+  userType?: 'premium' | 'free' | null;
 }
 
-export function ContentReview({ lessonId, onBack, onStartQuiz }: ContentReviewProps) {
+export function ContentReview({ lessonId, onBack, onStartQuiz, userType = 'free' }: ContentReviewProps) {
+  const [showDiagram, setShowDiagram] = useState(false);
+  const [diagramsRemaining, setDiagramsRemaining] = useState(
+    userType === 'premium' ? 30 : 5
+  );
   // Mock lesson data - in real app this would come from props or API
   const lessonContent = {
     title: 'Introduction to Thermodynamics',
@@ -76,7 +82,7 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
             >
               <ArrowLeft className="w-5 h-5" />
             </motion.button>
-            
+
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{lessonContent.icon}</span>
@@ -91,7 +97,7 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-4xl mx-auto p-4 lg:p-8 pb-32">
+      <div className="max-w-4xl mx-auto p-4 lg:p-8 pb-8">
         <motion.div
           className="bg-[#312E81] rounded-2xl p-6 lg:p-10 border-2 border-[#06B6D4]/30"
           initial={{ opacity: 0, y: 20 }}
@@ -114,7 +120,7 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
                   </motion.h1>
                 );
               }
-              
+
               // H2
               if (line.startsWith('## ')) {
                 return (
@@ -201,48 +207,137 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
         </motion.div>
       </div>
 
-      {/* Floating Action Button (FAB) */}
-      <motion.button
-        onClick={onStartQuiz}
-        className="fixed bottom-8 right-8 px-6 py-4 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-2xl text-white shadow-2xl flex items-center gap-3 relative overflow-hidden group"
-        initial={{ scale: 0 }}
-        animate={{ 
-          scale: 1,
-          boxShadow: [
-            '0 10px 40px rgba(244, 114, 182, 0.4)',
-            '0 10px 60px rgba(244, 114, 182, 0.6)',
-            '0 10px 40px rgba(244, 114, 182, 0.4)'
-          ]
-        }}
-        transition={{ 
-          scale: { delay: 0.5, type: 'spring', stiffness: 200 },
-          boxShadow: { duration: 2, repeat: Infinity }
-        }}
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {/* Animated Background Shine */}
+      {/* Diagram Modal */}
+      {showDiagram && (
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
-          animate={{
-            x: ['-200%', '200%']
-          }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        />
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setShowDiagram(false)}
+        >
+          <motion.div
+            className="bg-[#312E81] rounded-3xl max-w-4xl w-full border-2 border-[#06B6D4]/50 relative overflow-hidden max-h-[90vh] overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <motion.button
+              onClick={() => setShowDiagram(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-[#1E1B4B]/80 hover:bg-[#1E1B4B] transition-colors z-50 cursor-pointer"
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </motion.button>
 
-        {/* Pulsing Ring */}
-        <motion.div
-          className="absolute inset-0 rounded-2xl border-2 border-white/50"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.5, 0, 0.5]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
+            <div className="p-6 lg:p-8">
+              <h2 className="text-2xl lg:text-3xl text-white mb-4 flex items-center gap-3">
+                <Image className="w-8 h-8 text-[#06B6D4]" />
+                Thermodynamics Diagram
+              </h2>
+              <p className="text-gray-400 mb-6">AI-generated visual representation of the lesson concepts</p>
 
-        <Gamepad2 className="w-5 h-5 relative z-10" />
-        <span className="relative z-10">Ready for Quiz? 🎮</span>
-      </motion.button>
+              {/* Mock Diagram - Replace with actual diagram */}
+              <div className="bg-[#1E1B4B] rounded-xl p-8 border-2 border-[#06B6D4]/30 flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <Image className="w-24 h-24 text-[#06B6D4] mx-auto mb-4 opacity-50" />
+                  <p className="text-gray-400 text-lg">Mock Diagram Placeholder</p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    In production, this would display an AI-generated diagram<br />
+                    illustrating the thermodynamics concepts
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-between items-center">
+                <p className="text-sm text-gray-400">
+                  Diagrams remaining this week: <span className={userType === 'premium' ? 'text-[#10B981]' : 'text-[#FBBF24]'}>{diagramsRemaining}</span>
+                </p>
+                <motion.button
+                  onClick={() => setShowDiagram(false)}
+                  className="px-6 py-2 bg-[#06B6D4] rounded-lg text-white"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Close
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Bottom Action Bar */}
+      <div className="mt-12 mb-12 flex justify-center gap-6">
+        {/* Generate Diagram Button */}
+        <motion.button
+          onClick={() => {
+            if (diagramsRemaining > 0) {
+              setShowDiagram(true);
+              setDiagramsRemaining(prev => prev - 1);
+            }
+          }}
+          className={`px-6 py-4 rounded-2xl text-white shadow-xl flex items-center gap-3 relative overflow-hidden group ${diagramsRemaining > 0
+            ? 'bg-gradient-to-r from-[#06B6D4] to-[#3B82F6]'
+            : 'bg-gray-600 cursor-not-allowed'
+            }`}
+          whileHover={diagramsRemaining > 0 ? { scale: 1.05, y: -2 } : undefined}
+          whileTap={diagramsRemaining > 0 ? { scale: 0.95 } : undefined}
+          disabled={diagramsRemaining === 0}
+        >
+          {diagramsRemaining > 0 && (
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
+              animate={{
+                x: ['-200%', '200%']
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            />
+          )}
+
+          <Image className="w-5 h-5 relative z-10" />
+          <span className="relative z-10 flex flex-col items-start text-left">
+            <span className="text-sm font-semibold">Generate Diagram</span>
+            <span className={`text-xs ${diagramsRemaining > 0 ? 'text-white/80' : 'text-gray-400'}`}>
+              {diagramsRemaining > 0 ? `${diagramsRemaining} left this week` : 'Limit reached'}
+            </span>
+          </span>
+        </motion.button>
+
+        {/* Start Quiz Button */}
+        <motion.button
+          onClick={onStartQuiz}
+          className="px-6 py-4 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-2xl text-white shadow-xl flex items-center gap-3 relative overflow-hidden group"
+          initial={{ scale: 0.9 }}
+          animate={{
+            scale: 1,
+            boxShadow: [
+              '0 10px 20px rgba(244, 114, 182, 0.3)',
+              '0 10px 30px rgba(244, 114, 182, 0.5)',
+              '0 10px 20px rgba(244, 114, 182, 0.3)'
+            ]
+          }}
+          transition={{
+            scale: { duration: 0.2 },
+            boxShadow: { duration: 2, repeat: Infinity }
+          }}
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {/* Animated Background Shine */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
+            animate={{
+              x: ['-200%', '200%']
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          />
+
+          <Gamepad2 className="w-5 h-5 relative z-10" />
+          <span className="relative z-10 font-bold">Ready for Quiz? 🎮</span>
+        </motion.button>
+      </div>
     </div>
   );
 }
