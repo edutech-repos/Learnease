@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { CloudUpload, Zap, Shield, TrendingUp } from 'lucide-react';
+import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
 
@@ -18,6 +18,7 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
   const [isFocused, setIsFocused] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string>('');
+  const [learningMode, setLearningMode] = useState<'learning' | 'exam'>('learning');
 
   const maxChars = 4000; // Premium user limit
   const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
@@ -234,6 +235,32 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
               </motion.span>
             </div>
           </motion.div>
+
+          {/* Learning Mode Selector */}
+          <div className="mt-6 flex justify-center">
+            <div className="bg-[#1E1B4B] p-1 rounded-xl border border-[#06B6D4]/30 inline-flex">
+              <button
+                onClick={() => setLearningMode('learning')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'learning'
+                    ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
+                    : 'text-gray-400 hover:text-white'
+                  }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Learning Purpose</span>
+              </button>
+              <button
+                onClick={() => setLearningMode('exam')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'exam'
+                    ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
+                    : 'text-gray-400 hover:text-white'
+                  }`}
+              >
+                <GraduationCap className="w-4 h-4" />
+                <span>Exam Prep</span>
+              </button>
+            </div>
+          </div>
 
           {/* Primary Action Button */}
           <motion.button
