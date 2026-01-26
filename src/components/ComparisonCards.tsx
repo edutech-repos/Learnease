@@ -17,7 +17,7 @@ export function ComparisonCards({ onClose, onUpgrade }: ComparisonCardsProps) {
     { name: 'Personalized Learning Paths', free: false, premium: true },
     { name: 'Quiz Adjustments', free: 'Limited', premium: 'Unlimited' },
     { name: 'Priority Support', free: false, premium: true },
-    { name: 'Export Notes as PDF', free: false, premium: true },
+    { name: 'Export Notes as PDF', free: true, premium: true },
     { name: 'Ad-Free Experience', free: false, premium: true }
   ];
 

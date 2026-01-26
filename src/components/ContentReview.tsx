@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Gamepad2, Image, X } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Image, X, Download } from 'lucide-react';
 import { useState } from 'react';
 
 interface ContentReviewProps {
@@ -9,7 +9,7 @@ interface ContentReviewProps {
   userType?: 'premium' | 'free' | null;
 }
 
-export function ContentReview({ lessonId, onBack, onStartQuiz, userType = 'free' }: ContentReviewProps) {
+export function ContentReview({ onBack, onStartQuiz, userType = 'free' }: ContentReviewProps) {
   const [showDiagram, setShowDiagram] = useState(false);
   const [diagramsRemaining, setDiagramsRemaining] = useState(
     userType === 'premium' ? 30 : 5
@@ -84,12 +84,24 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
             </motion.button>
 
             <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{lessonContent.icon}</span>
-                <div>
-                  <h1 className="text-xl lg:text-2xl text-white">{lessonContent.title}</h1>
-                  <p className="text-sm text-gray-400">{lessonContent.subject} Notes</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{lessonContent.icon}</span>
+                  <div>
+                    <h1 className="text-xl lg:text-2xl text-white">{lessonContent.title}</h1>
+                    <p className="text-sm text-gray-400">{lessonContent.subject} Notes</p>
+                  </div>
                 </div>
+
+                <motion.button
+                  onClick={() => alert('Downloading PDF... (Mock Action)')}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#1E1B4B] border border-[#06B6D4]/30 rounded-xl text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download PDF</span>
+                </motion.button>
               </div>
             </div>
           </div>

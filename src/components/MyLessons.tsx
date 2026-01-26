@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Eye, Gamepad2 } from 'lucide-react';
+import { Eye, Gamepad2, Download } from 'lucide-react';
 import { NavigationLayout } from './NavigationLayout';
 
 interface MyLessonsProps {
@@ -12,14 +12,14 @@ interface MyLessonsProps {
   onStartQuiz?: (lessonId: number) => void;
 }
 
-export function MyLessons({ 
-  userName, 
-  userType, 
-  onNavigate, 
-  onShowProfile, 
+export function MyLessons({
+  userName,
+  userType,
+  onNavigate,
+  onShowProfile,
   onLogout,
   onViewLesson,
-  onStartQuiz 
+  onStartQuiz
 }: MyLessonsProps) {
   const lessons = [
     {
@@ -95,11 +95,22 @@ export function MyLessons({
     >
       <div className="p-4 lg:p-8 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-2xl lg:text-3xl text-white mb-2">Your Knowledge Vault ⚡️</h2>
-          <p className="text-gray-400 text-sm lg:text-base">
-            {lessons.length} lessons generated • Review notes or test your knowledge
-          </p>
+        <div className="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl lg:text-3xl text-white mb-2">Your Knowledge Vault ⚡️</h2>
+            <p className="text-gray-400 text-sm lg:text-base">
+              {lessons.length} lessons generated • Review notes or test your knowledge
+            </p>
+          </div>
+          <motion.button
+            onClick={() => alert('Downloading all lessons as PDF bundle... (Mock Action)')}
+            className="flex items-center gap-2 px-6 py-3 bg-[#312E81] border border-[#06B6D4]/50 rounded-xl text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Download className="w-5 h-5" />
+            <span>Download All Notes</span>
+          </motion.button>
         </div>
 
         {/* Lessons Grid */}
@@ -158,7 +169,7 @@ export function MyLessons({
                   <motion.button
                     onClick={() => onViewLesson?.(lesson.id)}
                     className="flex-1 py-2.5 bg-[#1E1B4B] border-2 border-[#06B6D4]/50 rounded-lg text-[#06B6D4] flex items-center justify-center gap-2 relative overflow-hidden group/btn"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.02,
                       borderColor: '#06B6D4',
                       boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)'
@@ -170,9 +181,23 @@ export function MyLessons({
                   </motion.button>
 
                   <motion.button
+                    onClick={() => alert(`Downloading PDF for ${lesson.title}...`)}
+                    className="p-2.5 bg-[#1E1B4B] border-2 border-[#06B6D4]/50 rounded-lg text-[#06B6D4] flex items-center justify-center relative overflow-hidden group/btn"
+                    whileHover={{
+                      scale: 1.05,
+                      borderColor: '#06B6D4',
+                      boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)'
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    title="Download PDF"
+                  >
+                    <Download className="w-4 h-4" />
+                  </motion.button>
+
+                  <motion.button
                     onClick={() => onStartQuiz?.(lesson.id)}
                     className="flex-1 py-2.5 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-lg text-white flex items-center justify-center gap-2 relative overflow-hidden group/btn"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.02,
                       boxShadow: '0 0 20px rgba(244, 114, 182, 0.5)'
                     }}
@@ -232,7 +257,7 @@ export function MyLessons({
                   lessons
                     .filter(l => l.quizTaken)
                     .reduce((acc, l) => acc + (l.score! / l.total!) * 100, 0) /
-                    lessons.filter(l => l.quizTaken).length
+                  lessons.filter(l => l.quizTaken).length
                 )}%
               </div>
               <div className="text-gray-400 text-sm">Average Score</div>
