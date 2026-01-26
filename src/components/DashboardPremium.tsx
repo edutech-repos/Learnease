@@ -69,22 +69,22 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
   };
 
   const weaknessTopics = [
-    { 
-      title: 'Photosynthesis: Dark Reactions', 
+    {
+      title: 'Photosynthesis: Dark Reactions',
       tag: 'Biology',
       attempts: 3,
       avgScore: '40%',
       icon: '🌱'
     },
-    { 
-      title: 'Quadratic Equations', 
+    {
+      title: 'Quadratic Equations',
       tag: 'Math',
       attempts: 5,
       avgScore: '52%',
       icon: '📐'
     },
-    { 
-      title: 'French Revolution Causes', 
+    {
+      title: 'French Revolution Causes',
       tag: 'History',
       attempts: 2,
       avgScore: '45%',
@@ -106,32 +106,78 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
         <div className="mb-8">
           {/* Top Half - PDF Upload Area */}
           <motion.div
-            className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all ${
-              isDragging 
-                ? 'border-solid border-[#06B6D4] glow-cyan' 
-                : 'border-dashed border-[#06B6D4]/60'
-            }`}
+            className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all cursor-pointer ${uploadError
+              ? 'border-[#EF4444] glow-red'
+              : selectedFile
+                ? 'border-[#10B981] glow-green'
+                : isDragging
+                  ? 'border-solid border-[#06B6D4] glow-cyan'
+                  : 'border-dashed border-[#06B6D4]/60'
+              }`}
             onDragEnter={() => setIsDragging(true)}
             onDragLeave={() => setIsDragging(false)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileSelect}
-            whileHover={{ borderColor: '#06B6D4' }}
+            onClick={() => document.getElementById('file-input-premium')?.click()}
+            whileHover={{ borderColor: uploadError ? '#EF4444' : selectedFile ? '#10B981' : '#06B6D4' }}
+            animate={uploadError ? {
+              x: [0, -10, 10, -10, 10, 0],
+              boxShadow: [
+                '0 0 20px rgba(239, 68, 68, 0.6)',
+                '0 0 40px rgba(239, 68, 68, 0.8)',
+                '0 0 20px rgba(239, 68, 68, 0.6)'
+              ]
+            } : selectedFile ? {
+              boxShadow: [
+                '0 0 20px rgba(16, 185, 129, 0.4)',
+                '0 0 30px rgba(16, 185, 129, 0.6)',
+                '0 0 20px rgba(16, 185, 129, 0.4)'
+              ]
+            } : undefined}
+            transition={uploadError ? { duration: 0.5 } : selectedFile ? { duration: 2, repeat: Infinity } : undefined}
           >
+            {/* Hidden File Input */}
+            <input
+              id="file-input-premium"
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
             <div className="flex flex-col items-center text-center">
               <motion.div
-                animate={{ 
+                animate={{
                   y: [0, -10, 0],
                   filter: [
-                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))',
-                    'drop-shadow(0 0 20px rgba(6, 182, 212, 0.8))',
-                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))'
+                    `drop-shadow(0 0 10px ${uploadError ? 'rgba(239, 68, 68, 0.5)' : selectedFile ? 'rgba(16, 185, 129, 0.5)' : 'rgba(6, 182, 212, 0.5)'})`,
+                    `drop-shadow(0 0 20px ${uploadError ? 'rgba(239, 68, 68, 0.8)' : selectedFile ? 'rgba(16, 185, 129, 0.8)' : 'rgba(6, 182, 212, 0.8)'})`,
+                    `drop-shadow(0 0 10px ${uploadError ? 'rgba(239, 68, 68, 0.5)' : selectedFile ? 'rgba(16, 185, 129, 0.5)' : 'rgba(6, 182, 212, 0.5)'})`
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                <CloudUpload className="w-16 h-16 lg:w-20 lg:h-20 text-[#06B6D4] mb-4" />
+                <CloudUpload className={`w-16 h-16 lg:w-20 lg:h-20 mb-4 ${uploadError ? 'text-[#EF4444]' : selectedFile ? 'text-[#10B981]' : 'text-[#06B6D4]'
+                  }`} />
               </motion.div>
-              <p className="text-lg lg:text-xl text-gray-300">Drop PDF here</p>
+
+              {selectedFile ? (
+                <>
+                  <p className="text-lg lg:text-xl text-[#10B981] font-semibold mb-2">✓ File Selected</p>
+                  <p className="text-base text-gray-300 mb-1">{selectedFile.name}</p>
+                  <p className="text-sm text-[#10B981]">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                </>
+              ) : uploadError ? (
+                <>
+                  <p className="text-lg lg:text-xl text-[#EF4444] font-semibold mb-2">✗ Upload Failed</p>
+                  <p className="text-sm text-gray-300">Click to try again</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-lg lg:text-xl text-gray-300">Drop PDF here or click to browse</p>
+                  <p className="text-gray-500 text-xs mt-2">Max file size: 10 MB • Unlimited lessons</p>
+                </>
+              )}
             </div>
           </motion.div>
 
@@ -146,10 +192,9 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
           </div>
 
           {/* Bottom Half - Text Input Area */}
-          <motion.div 
-            className={`relative ${
-              isAtLimit ? 'glow-red' : isFocused ? 'glow-cyan' : ''
-            }`}
+          <motion.div
+            className={`relative ${isAtLimit ? 'glow-red' : isFocused ? 'glow-cyan' : ''
+              }`}
             animate={isAtLimit ? {
               boxShadow: [
                 '0 0 20px rgba(239, 68, 68, 0.6)',
@@ -170,17 +215,16 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
                 filter: isFocused ? 'drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))' : 'none'
               }}
             />
-            
+
             {/* Character Counter */}
             <div className="mt-3 flex justify-end">
               <motion.span
-                className={`text-sm ${
-                  isAtLimit 
-                    ? 'text-[#EF4444]' 
-                    : textInput.length > 0 
-                      ? 'text-[#FBBF24]' 
-                      : 'text-gray-500'
-                }`}
+                className={`text-sm ${isAtLimit
+                  ? 'text-[#EF4444]'
+                  : textInput.length > 0
+                    ? 'text-[#FBBF24]'
+                    : 'text-gray-500'
+                  }`}
                 animate={isAtLimit ? {
                   scale: [1, 1.1, 1]
                 } : undefined}
@@ -240,7 +284,7 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.02,
                     borderColor: '#F472B6',
                     boxShadow: '0 0 30px rgba(244, 114, 182, 0.5), 0 0 60px rgba(244, 114, 182, 0.2)'
@@ -264,7 +308,7 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
                     </div>
 
                     <h4 className="text-white mb-3">{topic.title}</h4>
-                    
+
                     <div className="flex items-center gap-4 text-sm mb-4">
                       <div>
                         <span className="text-gray-400">Attempts: </span>

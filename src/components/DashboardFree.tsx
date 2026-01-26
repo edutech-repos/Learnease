@@ -92,33 +92,79 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
         <div className="mb-8">
           {/* Top Half - PDF Upload Area */}
           <motion.div
-            className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all ${
-              isDragging 
-                ? 'border-solid border-[#06B6D4] glow-cyan' 
-                : 'border-dashed border-[#06B6D4]/60'
-            }`}
+            className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all cursor-pointer ${uploadError
+              ? 'border-[#EF4444] glow-red'
+              : selectedFile
+                ? 'border-[#10B981] glow-green'
+                : isDragging
+                  ? 'border-solid border-[#06B6D4] glow-cyan'
+                  : 'border-dashed border-[#06B6D4]/60'
+              }`}
             onDragEnter={() => setIsDragging(true)}
             onDragLeave={() => setIsDragging(false)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileSelect}
-            whileHover={{ borderColor: '#06B6D4' }}
+            onClick={() => document.getElementById('file-input-free')?.click()}
+            whileHover={{ borderColor: uploadError ? '#EF4444' : selectedFile ? '#10B981' : '#06B6D4' }}
+            animate={uploadError ? {
+              x: [0, -10, 10, -10, 10, 0],
+              boxShadow: [
+                '0 0 20px rgba(239, 68, 68, 0.6)',
+                '0 0 40px rgba(239, 68, 68, 0.8)',
+                '0 0 20px rgba(239, 68, 68, 0.6)'
+              ]
+            } : selectedFile ? {
+              boxShadow: [
+                '0 0 20px rgba(16, 185, 129, 0.4)',
+                '0 0 30px rgba(16, 185, 129, 0.6)',
+                '0 0 20px rgba(16, 185, 129, 0.4)'
+              ]
+            } : undefined}
+            transition={uploadError ? { duration: 0.5 } : selectedFile ? { duration: 2, repeat: Infinity } : undefined}
           >
+            {/* Hidden File Input */}
+            <input
+              id="file-input-free"
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
             <div className="flex flex-col items-center text-center">
               <motion.div
-                animate={{ 
+                animate={{
                   y: [0, -10, 0],
                   filter: [
-                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))',
-                    'drop-shadow(0 0 20px rgba(6, 182, 212, 0.8))',
-                    'drop-shadow(0 0 10px rgba(6, 182, 212, 0.5))'
+                    `drop-shadow(0 0 10px ${uploadError ? 'rgba(239, 68, 68, 0.5)' : selectedFile ? 'rgba(16, 185, 129, 0.5)' : 'rgba(6, 182, 212, 0.5)'})`,
+                    `drop-shadow(0 0 20px ${uploadError ? 'rgba(239, 68, 68, 0.8)' : selectedFile ? 'rgba(16, 185, 129, 0.8)' : 'rgba(6, 182, 212, 0.8)'})`,
+                    `drop-shadow(0 0 10px ${uploadError ? 'rgba(239, 68, 68, 0.5)' : selectedFile ? 'rgba(16, 185, 129, 0.5)' : 'rgba(6, 182, 212, 0.5)'})`
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                <CloudUpload className="w-16 h-16 lg:w-20 lg:h-20 text-[#06B6D4] mb-4" />
+                <CloudUpload className={`w-16 h-16 lg:w-20 lg:h-20 mb-4 ${uploadError ? 'text-[#EF4444]' : selectedFile ? 'text-[#10B981]' : 'text-[#06B6D4]'
+                  }`} />
               </motion.div>
-              <p className="text-lg lg:text-xl text-gray-300">Drop PDF here</p>
-              <p className="text-[#FBBF24] text-xs lg:text-sm mt-2">5 lessons remaining this month</p>
+
+              {selectedFile ? (
+                <>
+                  <p className="text-lg lg:text-xl text-[#10B981] font-semibold mb-2">✓ File Selected</p>
+                  <p className="text-base text-gray-300 mb-1">{selectedFile.name}</p>
+                  <p className="text-sm text-[#10B981]">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                </>
+              ) : uploadError ? (
+                <>
+                  <p className="text-lg lg:text-xl text-[#EF4444] font-semibold mb-2">✗ Upload Failed</p>
+                  <p className="text-sm text-gray-300">Click to try again</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-lg lg:text-xl text-gray-300">Drop PDF here or click to browse</p>
+                  <p className="text-[#FBBF24] text-xs lg:text-sm mt-2">5 lessons remaining this month</p>
+                  <p className="text-gray-500 text-xs mt-1">Max file size: 10 MB</p>
+                </>
+              )}
             </div>
           </motion.div>
 
@@ -134,13 +180,12 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
 
           {/* Bottom Half - Text Input Area */}
           <motion.div
-            className={`relative bg-[#312E81] rounded-b-2xl p-6 lg:p-8 border-2 border-t-0 transition-all ${
-              isAtLimit 
-                ? 'border-[#EF4444] glow-red' 
-                : isFocused 
-                  ? 'border-[#06B6D4] glow-cyan' 
-                  : 'border-[#06B6D4]/30'
-            }`}
+            className={`relative bg-[#312E81] rounded-b-2xl p-6 lg:p-8 border-2 border-t-0 transition-all ${isAtLimit
+              ? 'border-[#EF4444] glow-red'
+              : isFocused
+                ? 'border-[#06B6D4] glow-cyan'
+                : 'border-[#06B6D4]/30'
+              }`}
             animate={isAtLimit ? {
               boxShadow: [
                 '0 0 20px rgba(239, 68, 68, 0.6)',
@@ -161,17 +206,16 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
                 filter: isFocused ? 'drop-shadow(0 0 10px rgba(6, 182, 212, 0.3))' : 'none'
               }}
             />
-            
+
             {/* Character Counter */}
             <div className="mt-3 flex justify-end">
               <motion.span
-                className={`text-sm ${
-                  isAtLimit 
-                    ? 'text-[#EF4444]' 
-                    : textInput.length > 0 
-                      ? 'text-[#FBBF24]' 
-                      : 'text-gray-500'
-                }`}
+                className={`text-sm ${isAtLimit
+                  ? 'text-[#EF4444]'
+                  : textInput.length > 0
+                    ? 'text-[#FBBF24]'
+                    : 'text-gray-500'
+                  }`}
                 animate={isAtLimit ? {
                   scale: [1, 1.1, 1]
                 } : undefined}
@@ -202,6 +246,13 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
               <span>🚀</span>
             </span>
           </motion.button>
+
+          {/* Upload Error Message */}
+          {uploadError && (
+            <p className="text-sm text-[#EF4444] mt-2 text-center">
+              {uploadError}
+            </p>
+          )}
         </div>
 
         {/* Upsell Banner */}
@@ -287,7 +338,7 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.03,
                   borderColor: '#06B6D4',
                   boxShadow: '0 0 20px rgba(6, 182, 212, 0.5)'
@@ -306,13 +357,12 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-4xl">{topic.icon}</span>
-                    <div className={`px-2 py-1 rounded-full text-xs ${
-                      topic.difficulty === 'Beginner' 
-                        ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/50'
-                        : topic.difficulty === 'Intermediate'
-                          ? 'bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/50'
-                          : 'bg-[#F472B6]/20 text-[#F472B6] border border-[#F472B6]/50'
-                    }`}>
+                    <div className={`px-2 py-1 rounded-full text-xs ${topic.difficulty === 'Beginner'
+                      ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/50'
+                      : topic.difficulty === 'Intermediate'
+                        ? 'bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/50'
+                        : 'bg-[#F472B6]/20 text-[#F472B6] border border-[#F472B6]/50'
+                      }`}>
                       {topic.difficulty}
                     </div>
                   </div>
@@ -325,7 +375,7 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
                     <span className="text-gray-400">
                       {topic.students} students
                     </span>
-                    <motion.span 
+                    <motion.span
                       className="text-[#06B6D4] opacity-0 group-hover:opacity-100"
                       initial={{ x: -10 }}
                       whileHover={{ x: 0 }}
@@ -369,7 +419,7 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
           </p>
           <motion.button
             className="px-6 py-3 bg-transparent border-2 border-[#FBBF24] rounded-xl text-[#FBBF24] hover:bg-[#FBBF24]/10 transition-all inline-flex items-center gap-2"
-            whileHover={{ 
+            whileHover={{
               scale: 1.05,
               boxShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
             }}

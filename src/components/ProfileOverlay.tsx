@@ -17,25 +17,27 @@ export function ProfileOverlay({ userName, userType, onClose, onShowComparison }
       onClick={onClose}
     >
       <motion.div
-        className="bg-[#312E81]/90 backdrop-blur-xl rounded-3xl p-6 lg:p-8 max-w-md w-full border-2 border-[#06B6D4]/30 relative overflow-hidden"
+        className="bg-[#312E81]/90 backdrop-blur-xl rounded-3xl max-w-md w-full border-2 border-[#06B6D4]/30 relative max-h-[75vh] flex flex-col overflow-hidden"
         initial={{ opacity: 0, scale: 0.9, y: 50 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* Background Glass Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#06B6D4]/10 via-transparent to-[#F472B6]/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#06B6D4]/10 via-transparent to-[#F472B6]/10 pointer-events-none" />
 
-        {/* Close Button */}
-        <motion.button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-[#1E1B4B]/50 hover:bg-[#1E1B4B] transition-colors"
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <X className="w-5 h-5 text-gray-400" />
-        </motion.button>
+        {/* Sticky Header with Close Button */}
+        <div className="sticky top-0 z-50 flex justify-end p-4 bg-transparent">
+          <motion.button
+            onClick={onClose}
+            className="p-2 rounded-full bg-[#1E1B4B]/80 hover:bg-[#1E1B4B] transition-colors cursor-pointer"
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </motion.button>
+        </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-6 lg:px-8 lg:pb-8 -mt-4">
           {/* User Avatar */}
           <div className="flex flex-col items-center mb-6">
             <motion.div
@@ -55,7 +57,7 @@ export function ProfileOverlay({ userName, userType, onClose, onShowComparison }
             </motion.div>
 
             <h2 className="text-2xl text-white mb-2">{userName}</h2>
-            
+
             {userType === 'premium' ? (
               <motion.div
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FBBF24] to-[#F59E0B] rounded-full glow-yellow"
@@ -76,22 +78,19 @@ export function ProfileOverlay({ userName, userType, onClose, onShowComparison }
           <div className="grid grid-cols-2 gap-4 mb-6">
             {/* Credits */}
             <motion.div
-              className={`bg-[#1E1B4B]/50 rounded-xl p-5 border-2 ${
-                userType === 'premium' 
-                  ? 'border-[#10B981]/50' 
-                  : 'border-[#FBBF24]/50'
-              }`}
+              className={`bg-[#1E1B4B]/50 rounded-xl p-5 border-2 ${userType === 'premium'
+                ? 'border-[#10B981]/50'
+                : 'border-[#FBBF24]/50'
+                }`}
               whileHover={{ scale: 1.03 }}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-400 text-sm">Credits Left</span>
-                <Zap className={`w-4 h-4 ${
-                  userType === 'premium' ? 'text-[#10B981]' : 'text-[#FBBF24]'
-                }`} />
+                <Zap className={`w-4 h-4 ${userType === 'premium' ? 'text-[#10B981]' : 'text-[#FBBF24]'
+                  }`} />
               </div>
-              <div className={`text-2xl ${
-                userType === 'premium' ? 'text-[#10B981]' : 'text-[#FBBF24]'
-              } flex items-center gap-2`}>
+              <div className={`text-2xl ${userType === 'premium' ? 'text-[#10B981]' : 'text-[#FBBF24]'
+                } flex items-center gap-2`}>
                 <span>{userType === 'premium' ? '500' : '5'}</span>
                 <span className="text-lg">⚡️</span>
               </div>
@@ -117,11 +116,10 @@ export function ProfileOverlay({ userName, userType, onClose, onShowComparison }
 
             {/* Adjusted Quizzes */}
             <motion.div
-              className={`bg-[#1E1B4B]/50 rounded-xl p-5 border-2 relative overflow-hidden ${
-                userType === 'premium' 
-                  ? 'border-[#06B6D4]/50' 
-                  : 'border-gray-600'
-              }`}
+              className={`bg-[#1E1B4B]/50 rounded-xl p-5 border-2 relative overflow-hidden ${userType === 'premium'
+                ? 'border-[#06B6D4]/50'
+                : 'border-gray-600'
+                }`}
               whileHover={{ scale: 1.03 }}
             >
               {userType === 'free' && (
@@ -137,9 +135,8 @@ export function ProfileOverlay({ userName, userType, onClose, onShowComparison }
                   <Lock className="w-4 h-4 text-gray-500" />
                 )}
               </div>
-              <div className={`text-2xl ${
-                userType === 'premium' ? 'text-[#06B6D4]' : 'text-gray-500'
-              } flex items-center gap-2`}>
+              <div className={`text-2xl ${userType === 'premium' ? 'text-[#06B6D4]' : 'text-gray-500'
+                } flex items-center gap-2`}>
                 {userType === 'premium' ? (
                   <>
                     <Infinity className="w-6 h-6" />
