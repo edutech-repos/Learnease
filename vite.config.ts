@@ -56,5 +56,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/webhook': {
+        target: 'https://amrutpatankar.app.n8n.cloud',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 });

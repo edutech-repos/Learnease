@@ -1,11 +1,13 @@
-import { motion } from 'motion/react';
-import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap, RotateCcw, Sparkles, Save } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap, RotateCcw, Sparkles, Save, Loader2, Gamepad2 } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
-import { ContentToggle, ContentComparison } from './ContentToggle';
-
+import { ContentComparison } from './ContentToggle';
+import { igniteLesson, igniteLessonMock } from '../lib/api';
+import { LoadingOverlay } from './LoadingOverlay';
 interface DashboardPremiumProps {
   userName: string;
+  userId?: string;
   onNavigate: (screen: any) => void;
   onShowProfile: () => void;
   onLogout: () => void;
@@ -13,7 +15,7 @@ interface DashboardPremiumProps {
   onShowComparison?: () => void;
 }
 
-export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout, onIgniteLesson, onShowComparison }: DashboardPremiumProps) {
+export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison }: DashboardPremiumProps) {
   const [textInput, setTextInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -22,8 +24,11 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
   const [learningMode, setLearningMode] = useState<'learning' | 'exam'>('learning');
   const [showContentComparison, setShowContentComparison] = useState(false);
   const [showAfterContent, setShowAfterContent] = useState(true);
+  const [showDiagram, setShowDiagram] = useState(false);
   const [originalContent, setOriginalContent] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const maxChars = 4000; // Premium user limit
   const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
@@ -68,68 +73,48 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
     }
   };
 
-  const handleIgniteLesson = () => {
+  const handleIgniteLesson = async () => {
     if (textInput.length > 0 || selectedFile) {
       // Store original content
-      setOriginalContent(textInput || (selectedFile ? `File: ${selectedFile.name}` : ''));
+      const rawText = textInput || (selectedFile ? `File: ${selectedFile.name}` : '');
+      setOriginalContent(rawText);
+      setApiError(null);
+      setIsLoading(true);
 
-      // Premium Thermodynamics lesson content (enhanced version)
-      const mockGeneratedContent = `# Introduction to Thermodynamics ⚡️ Premium Edition
+      try {
+        // Call the webhook API
+        const response = await igniteLesson({
+          userId: userId,
+          rawText: rawText,
+        });
 
-## The Four Laws of Thermodynamics
+        // Use htmlContent for the generated content display
+        setGeneratedContent(response.htmlContent);
+        // Store MCQs for the quiz
+        console.log('MCQs for quiz:', response.mcqs);
 
-### Zeroth Law
-Thermal equilibrium is transitive - if two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other.
-- **Key Insight:** This law allows us to define temperature as a measurable quantity
-- **Application:** Thermometers work based on this principle
+        setShowContentComparison(true);
+        setShowAfterContent(true);
+      } catch (error) {
+        console.error('Ignite lesson failed:', error);
+        setApiError(error instanceof Error ? error.message : 'Failed to process content. Please try again.');
 
-### First Law (Conservation of Energy)
-Energy cannot be created or destroyed in an isolated system.
-- ΔU = Q - W (Change in internal energy = Heat added - Work done)
-- This is essentially the law of conservation of energy
-- **Advanced Note:** For steady-flow systems: dE/dt = Q̇ - Ẇ
-
-### Second Law (Entropy)
-Entropy always increases in isolated systems.
-- Heat naturally flows from hot to cold objects
-- Heat engines cannot be 100% efficient
-- Carnot efficiency sets the theoretical maximum
-- **Key Formula:** ΔS ≥ Q/T (Clausius Inequality)
-
-### Third Law
-As T → 0K, entropy → 0
-- As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero
-- **Implication:** Absolute zero is unattainable in a finite number of steps
-
-## Advanced Applications
-- Heat engines (cars, power plants, jet engines)
-- Refrigeration cycles (HVAC systems, cryogenics)
-- Weather patterns and atmospheric dynamics
-- Chemical reaction spontaneity (Gibbs free energy)
-- Biological systems and metabolism
-
-## Key Formulas & Equations
-| Formula | Description |
-|---------|-------------|
-| ΔU = Q - W | First Law (closed system) |
-| η = 1 - (T_cold / T_hot) | Carnot Efficiency |
-| PV = nRT | Ideal Gas Law |
-| ΔG = ΔH - TΔS | Gibbs Free Energy |
-| COP = Q_L / W | Coefficient of Performance |
-
-## Weakness Analysis 🎯
-
-Based on your input, the AI has identified these areas for improvement:
-- Focus on understanding entropy conceptually
-- Practice Carnot cycle calculations
-- Review thermodynamic process types (isothermal, adiabatic, isobaric, isochoric)
-
-## Summary
-Thermodynamics governs how energy moves and transforms in physical systems. This premium lesson covers advanced concepts and real-world applications essential for engineering, chemistry, and physics.`;
-
-      setGeneratedContent(mockGeneratedContent);
-      setShowContentComparison(true);
-      setShowAfterContent(true);
+        // Fallback to mock if webhook fails
+        try {
+          const mockResponse = await igniteLessonMock({
+            userId: userId,
+            rawText: rawText,
+          });
+          setGeneratedContent(mockResponse.htmlContent);
+          setShowContentComparison(true);
+          setShowAfterContent(true);
+          setApiError('Using offline mode - webhook unavailable');
+        } catch (mockError) {
+          console.error('Mock also failed:', mockError);
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -139,6 +124,7 @@ Thermodynamics governs how energy moves and transforms in physical systems. This
     setSelectedFile(null);
     setOriginalContent('');
     setGeneratedContent('');
+    setApiError(null);
   };
 
   const weaknessTopics = [
@@ -174,6 +160,10 @@ Thermodynamics governs how energy moves and transforms in physical systems. This
       onShowProfile={onShowProfile}
       onLogout={onLogout}
     >
+      <AnimatePresence>
+        {isLoading && <LoadingOverlay />}
+      </AnimatePresence>
+
       <div className="p-4 lg:p-8 max-w-6xl mx-auto">
         {/* Hero Split Input Zone */}
         <div className="mb-8">
@@ -395,31 +385,115 @@ Thermodynamics governs how energy moves and transforms in physical systems. This
                   <Save className="w-4 h-4" />
                   <span className="text-sm">Save Lesson</span>
                 </motion.button>
+                {/* Ignite Button */}
                 <motion.button
-                  onClick={() => onIgniteLesson?.()}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FBBF24] to-[#F59E0B] rounded-lg text-[#1E1B4B] font-medium"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02, boxShadow: '0 0 20px rgba(244, 114, 182, 0.4)' }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleIgniteLesson}
+                  disabled={isLoading}
+                  className={`w-full bg-gradient-to-r from-[#F472B6] to-[#EC4899] p-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-[#F472B6]/20 border border-[#F472B6]/20 group relative overflow-hidden ${isLoading ? 'opacity-80 cursor-not-allowed' : ''}`}
                 >
-                  <span className="text-sm">Continue to Quiz →</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 translate-x-[-200%] group-hover:animate-shine" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Igniting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 group-hover:animate-pulse" />
+                      <span className="tracking-wide">IGNITE LESSON (PREMIUM)</span>
+                    </>
+                  )}
                 </motion.button>
               </div>
+
+              {/* Error Message */}
+              {apiError && (
+                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2 text-red-200 text-sm animate-in fade-in slide-in-from-top-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  {apiError}
+                </div>
+              )}
             </div>
-
-            {/* Toggle */}
-            <ContentToggle
-              showAfter={showAfterContent}
-              onToggle={setShowAfterContent}
-              beforeLabel="Original Input"
-              afterLabel="AI Generated"
-            />
-
             {/* Content Comparison */}
             <ContentComparison
               beforeContent={originalContent}
               afterContent={generatedContent}
               showAfter={showAfterContent}
             />
+
+            {/* Action Buttons Row */}
+            {generatedContent && (
+              <div className="mt-8 flex flex-col md:flex-row gap-4">
+                <motion.button
+                  onClick={() => setShowDiagram(!showDiagram)}
+                  className="flex-1 py-3 bg-[#1E1B4B] border-2 border-[#06B6D4]/50 rounded-xl text-[#06B6D4] flex items-center justify-center gap-2 relative overflow-hidden group"
+                  whileHover={{
+                    scale: 1.02,
+                    borderColor: '#06B6D4',
+                    boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)'
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span className="font-medium">
+                    {showDiagram ? 'Hide Diagram' : 'Generate Diagram'}
+                  </span>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => alert('Starting quiz... (Feature coming soon!)')}
+                  className="flex-1 py-3 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-xl text-white flex items-center justify-center gap-2 relative overflow-hidden group"
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: '0 0 20px rgba(244, 114, 182, 0.5)'
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-white/20"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  <Gamepad2 className="w-5 h-5 relative z-10" />
+                  <span className="font-medium relative z-10">Take Quiz</span>
+                </motion.button>
+              </div>
+            )}
+
+            {/* Diagram Display - Controlled by button */}
+            <AnimatePresence>
+              {showDiagram && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginTop: 32 }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  className="rounded-2xl overflow-hidden border border-[#06B6D4]/30 shadow-lg shadow-[#06B6D4]/10 bg-white"
+                >
+                  <div className="bg-[#1E1B4B] p-4 border-b border-[#06B6D4]/30 flex items-center justify-between">
+                    <h3 className="text-white font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#F472B6]" />
+                      AI Concept Visualization
+                    </h3>
+                    <motion.button
+                      onClick={() => setShowDiagram(false)}
+                      className="p-1 rounded-full hover:bg-[#312E81] transition-colors"
+                    >
+                      <RotateCcw className="w-4 h-4 text-gray-400" />
+                    </motion.button>
+                  </div>
+                  <div className="flex justify-center bg-white p-4">
+                    <img
+                      src="/placeholder-diagram.svg"
+                      alt="AI Generated Diagram"
+                      className="max-w-full h-auto max-h-[400px] object-contain"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 

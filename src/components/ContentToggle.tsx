@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { FileText, Sparkles, ArrowRight } from 'lucide-react';
+import { SafeContentRenderer } from './SafeContentRenderer';
 
 interface ContentToggleProps {
     showAfter: boolean;
@@ -121,48 +122,7 @@ export function ContentComparison({
                 className="min-h-[200px]"
             >
                 {showAfter ? (
-                    <div className="prose prose-invert max-w-none">
-                        {afterContent.split('\n').map((line, idx) => {
-                            if (line.startsWith('# ')) {
-                                return (
-                                    <h1 key={idx} className="text-2xl text-white mb-4 mt-6 first:mt-0">
-                                        {line.replace('# ', '')}
-                                    </h1>
-                                );
-                            }
-                            if (line.startsWith('## ')) {
-                                return (
-                                    <h2 key={idx} className="text-xl text-[#06B6D4] mb-3 mt-5 flex items-center gap-2">
-                                        <span className="w-1.5 h-6 bg-[#06B6D4] rounded-full" />
-                                        {line.replace('## ', '')}
-                                    </h2>
-                                );
-                            }
-                            if (line.startsWith('### ')) {
-                                return (
-                                    <h3 key={idx} className="text-lg text-[#F472B6] mb-2 mt-4">
-                                        {line.replace('### ', '')}
-                                    </h3>
-                                );
-                            }
-                            if (line.startsWith('- ')) {
-                                return (
-                                    <div key={idx} className="flex items-start gap-2 mb-2 ml-4">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#FBBF24] mt-2" />
-                                        <p className="text-gray-300">{line.replace('- ', '')}</p>
-                                    </div>
-                                );
-                            }
-                            if (line.trim()) {
-                                return (
-                                    <p key={idx} className="text-gray-300 mb-3 leading-relaxed">
-                                        {line}
-                                    </p>
-                                );
-                            }
-                            return null;
-                        })}
-                    </div>
+                    <SafeContentRenderer htmlContent={afterContent} />
                 ) : (
                     <div className="bg-[#1E1B4B] rounded-xl p-4 border border-[#06B6D4]/20">
                         <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">

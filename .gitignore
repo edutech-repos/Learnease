@@ -32,5 +32,4 @@ dist-ssr
 
 
 supabase.md 
-src/lib/supabase.ts
-src/lib/types.ts
+src/lib
