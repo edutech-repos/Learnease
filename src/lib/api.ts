@@ -55,48 +55,60 @@ export async function igniteLessonMock(request: IgniteLessonRequest): Promise<We
 
     return {
         userId: request.userId,
-        htmlContent: `# Introduction to Thermodynamics
+        htmlContent: `<h2>Introduction to Thermodynamics</h2>
+<p>Thermodynamics is the branch of physics that deals with the relationships between heat and other forms of energy. In particular, it describes how thermal energy is converted to and from other forms of energy and how it affects matter.</p>
 
-## The Four Laws
+<h3>The Four Laws of Thermodynamics</h3>
+<p>The fundamental principles of thermodynamics are expressed in four laws:</p>
 
-### Zeroth Law
-Thermal equilibrium is transitive
+<h4><strong>Zeroth Law: Thermal Equilibrium</strong></h4>
+<p>If two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other. This law forms the basis for temperature measurement.</p>
 
-### First Law
-Energy cannot be created or destroyed
-- ΔU = Q - W
+<h4><strong>First Law: Conservation of Energy</strong></h4>
+<p>Energy cannot be created or destroyed, only transformed. The change in internal energy of a closed system is equal to the heat supplied to the system minus the work done by the system.</p>
+<blockquote>Formula: <strong>ΔU = Q - W</strong></blockquote>
 
-### Second Law
-Entropy always increases
+<h4><strong>Second Law: Entropy</strong></h4>
+<p>In any cyclic process, the entropy will either increase or remain the same. It establishes the concept of irreversibility and the "arrow of time". Heat cannot spontaneously flow from a colder location to a hotter location.</p>
 
-### Third Law
-As T → 0K, entropy → 0
+<h4><strong>Third Law: Absolute Zero</strong></h4>
+<p>As the temperature of a system approaches absolute zero (0 Kelvin), the entropy of the system approaches a constant minimum. Ideally, the entropy of a perfect crystal at absolute zero is exactly equal to zero.</p>
 
-## Applications
-- Heat engines
-- Refrigeration
-- Weather patterns`,
+<h3>Real-World Applications</h3>
+<ul>
+  <li><strong>Heat Engines:</strong> Car engines and power plants convert heat into mechanical work.</li>
+  <li><strong>Refrigerators & AC:</strong> These devices use work to move heat from a cool space to a warm space (against the natural flow).</li>
+  <li><strong>Biological Systems:</strong> Living organisms are open systems that constantly exchange energy and matter with their surroundings to maintain low entropy (order).</li>
+</ul>
+
+<h3>Summary</h3>
+<p>Thermodynamics governs the behavior of energy in the universe, from the smallest engine to the stars themselves. Understanding these laws is crucial for engineering, chemistry, and environmental science.</p>`,
         textContent: `Introduction to Thermodynamics
 
-The Four Laws
+Thermodynamics is the branch of physics that deals with the relationships between heat and other forms of energy. In particular, it describes how thermal energy is converted to and from other forms of energy and how it affects matter.
 
-Zeroth Law
-Thermal equilibrium is transitive
+The Four Laws of Thermodynamics:
 
-First Law
-Energy cannot be created or destroyed
-- ΔU = Q - W
+Zeroth Law: Thermal Equilibrium
+If two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other. This law forms the basis for temperature measurement.
 
-Second Law
-Entropy always increases
+First Law: Conservation of Energy
+Energy cannot be created or destroyed, only transformed. The change in internal energy of a closed system is equal to the heat supplied to the system minus the work done by the system.
+Formula: ΔU = Q - W
 
-Third Law
-As T → 0K, entropy → 0
+Second Law: Entropy
+In any cyclic process, the entropy will either increase or remain the same. It establishes the concept of irreversibility and the "arrow of time". Heat cannot spontaneously flow from a colder location to a hotter location.
 
-Applications
-- Heat engines
-- Refrigeration
-- Weather patterns`,
+Third Law: Absolute Zero
+As the temperature of a system approaches absolute zero (0 Kelvin), the entropy of the system approaches a constant minimum. Ideally, the entropy of a perfect crystal at absolute zero is exactly equal to zero.
+
+Real-World Applications:
+- Heat Engines: Car engines and power plants convert heat into mechanical work.
+- Refrigerators & AC: These devices use work to move heat from a cool space to a warm space.
+- Biological Systems: Living organisms exchange energy to maintain low entropy.
+
+Summary
+Thermodynamics governs the behavior of energy in the universe. Understanding these laws is crucial for engineering, chemistry, and environmental science.`,
         mcqs: [
             {
                 question: "What does the First Law of Thermodynamics state?",
