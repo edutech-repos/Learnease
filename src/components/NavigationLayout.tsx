@@ -12,14 +12,14 @@ interface NavigationLayoutProps {
   onLogout: () => void;
 }
 
-export function NavigationLayout({ 
-  children, 
-  userName, 
-  userType, 
+export function NavigationLayout({
+  children,
+  userName,
+  userType,
   currentScreen,
   onNavigate,
   onShowProfile,
-  onLogout 
+  onLogout
 }: NavigationLayoutProps) {
   const navItems = [
     { icon: Home, label: 'Home', screen: 'dashboard' },
@@ -29,13 +29,13 @@ export function NavigationLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-[#1E1B4B] flex flex-col lg:flex-row">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-[#312E81] border-r border-[#06B6D4]/20 p-6">
+    <div className="h-screen bg-[#1E1B4B] flex flex-col lg:flex-row overflow-hidden">
+      {/* Desktop Sidebar - Fixed */}
+      <aside className="hidden lg:flex flex-col w-64 h-screen bg-[#312E81] border-r border-[#06B6D4]/20 p-6 flex-shrink-0">
         <div className="flex items-center gap-3 mb-8">
-          <motion.div 
+          <motion.div
             className="p-2 rounded-lg bg-gradient-to-br from-[#06B6D4] to-[#F472B6] glow-cyan"
-            animate={{ 
+            animate={{
               boxShadow: [
                 '0 0 20px rgba(6, 182, 212, 0.5)',
                 '0 0 30px rgba(6, 182, 212, 0.7)',
@@ -56,11 +56,10 @@ export function NavigationLayout({
               <motion.button
                 key={idx}
                 onClick={() => onNavigate(item.screen)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive 
-                    ? 'bg-[#06B6D4]/20 glow-cyan border border-[#06B6D4]' 
-                    : 'hover:bg-[#1E1B4B]'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                  ? 'bg-[#06B6D4]/20 glow-cyan border border-[#06B6D4]'
+                  : 'hover:bg-[#1E1B4B]'
+                  }`}
                 whileHover={{ x: 5 }}
               >
                 <item.icon className={`w-5 h-5 ${isActive ? 'text-[#06B6D4]' : 'text-gray-400'}`} />
@@ -70,19 +69,19 @@ export function NavigationLayout({
           })}
         </nav>
 
-        <button 
+        <button
           onClick={onLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#1E1B4B] hover:text-[#F472B6] transition-all"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-[#1E1B4B] hover:text-[#F472B6] transition-all mt-auto"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
         </button>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="bg-[#312E81] border-b border-[#06B6D4]/20 p-4">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Top Bar - Fixed */}
+        <header className="bg-[#312E81] border-b border-[#06B6D4]/20 p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-xl lg:text-2xl text-white">Hello, {userName}! ⚡️</h1>
             <motion.button
@@ -91,7 +90,7 @@ export function NavigationLayout({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <motion.div 
+              <motion.div
                 className="w-10 h-10 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#F472B6] p-0.5"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
@@ -114,8 +113,8 @@ export function NavigationLayout({
           </div>
         </header>
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-auto pb-20 lg:pb-0">
+        {/* Content Area - Scrollable */}
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           {children}
         </main>
       </div>
@@ -129,9 +128,8 @@ export function NavigationLayout({
               <motion.button
                 key={idx}
                 onClick={() => onNavigate(item.screen)}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${
-                  isActive ? 'text-[#06B6D4]' : 'text-gray-400'
-                }`}
+                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${isActive ? 'text-[#06B6D4]' : 'text-gray-400'
+                  }`}
                 whileTap={{ scale: 0.9 }}
               >
                 <item.icon className={`w-5 h-5 ${isActive ? 'glow-cyan' : ''}`} />

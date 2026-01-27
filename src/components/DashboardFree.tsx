@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
-import { CloudUpload, Zap, Flame, Lock, Sparkles, BookOpen, GraduationCap } from 'lucide-react';
+import { CloudUpload, Zap, Flame, Lock, Sparkles, BookOpen, GraduationCap, RotateCcw, Save } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
+import { ContentToggle, ContentComparison } from './ContentToggle';
 
 interface DashboardFreeProps {
   userName: string;
@@ -20,6 +21,10 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string>('');
   const [learningMode, setLearningMode] = useState<'learning' | 'exam'>('learning');
+  const [showContentComparison, setShowContentComparison] = useState(false);
+  const [showAfterContent, setShowAfterContent] = useState(true);
+  const [originalContent, setOriginalContent] = useState('');
+  const [generatedContent, setGeneratedContent] = useState('');
 
   const maxChars = 1000; // Free user limit
   const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
@@ -66,8 +71,58 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
 
   const handleIgniteLesson = () => {
     if (textInput.length > 0 || selectedFile) {
-      onIgniteLesson?.();
+      // Store original content
+      setOriginalContent(textInput || (selectedFile ? `File: ${selectedFile.name}` : ''));
+
+      // Thermodynamics lesson content (matching MyLessons)
+      const mockGeneratedContent = `# Introduction to Thermodynamics
+
+## The Four Laws
+
+### Zeroth Law
+Thermal equilibrium is transitive - if two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other.
+
+### First Law
+Energy cannot be created or destroyed in an isolated system.
+- ΔU = Q - W (Change in internal energy = Heat added - Work done)
+- This is essentially the law of conservation of energy
+
+### Second Law
+Entropy always increases in isolated systems.
+- Heat naturally flows from hot to cold objects
+- Heat engines cannot be 100% efficient
+- Carnot efficiency sets the theoretical maximum
+
+### Third Law
+As T → 0K, entropy → 0
+- As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero
+
+## Applications
+- Heat engines (cars, power plants)
+- Refrigeration (air conditioners, refrigerators)
+- Weather patterns (atmospheric thermodynamics)
+- Chemical reactions (predicting reaction spontaneity)
+
+## Key Formulas
+- First Law: ΔU = Q - W
+- Carnot Efficiency: η = 1 - (T_cold / T_hot)
+- Ideal Gas Law: PV = nRT
+
+## Summary
+Thermodynamics governs how energy moves and transforms in physical systems. Understanding these principles is crucial for engineering, chemistry, and understanding natural phenomena.`;
+
+      setGeneratedContent(mockGeneratedContent);
+      setShowContentComparison(true);
+      setShowAfterContent(true);
     }
+  };
+
+  const handleResetContent = () => {
+    setShowContentComparison(false);
+    setTextInput('');
+    setSelectedFile(null);
+    setOriginalContent('');
+    setGeneratedContent('');
   };
 
   const trendingTopics = [
@@ -233,8 +288,8 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
               <button
                 onClick={() => setLearningMode('learning')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'learning'
-                    ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <BookOpen className="w-4 h-4" />
@@ -243,8 +298,8 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
               <button
                 onClick={() => setLearningMode('exam')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'exam'
-                    ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <GraduationCap className="w-4 h-4" />
@@ -281,6 +336,66 @@ export function DashboardFree({ userName, onNavigate, onShowProfile, onLogout, o
             </p>
           )}
         </div>
+
+        {/* Content Comparison Section */}
+        {showContentComparison && (
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* Header with Action Buttons */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-[#F472B6]" />
+                <h3 className="text-xl text-white">Generated Lesson ✨</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <motion.button
+                  onClick={handleResetContent}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#312E81] border border-[#06B6D4]/30 rounded-lg text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="text-sm">New Lesson</span>
+                </motion.button>
+                <motion.button
+                  onClick={() => alert('Lesson saved to My Lessons! 🎉')}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#312E81] border border-[#10B981]/50 rounded-lg text-[#10B981] hover:bg-[#10B981]/10 transition-colors"
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Save className="w-4 h-4" />
+                  <span className="text-sm">Save Lesson</span>
+                </motion.button>
+                <motion.button
+                  onClick={() => onIgniteLesson?.()}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-lg text-white"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-sm">Continue to Quiz →</span>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Toggle */}
+            <ContentToggle
+              showAfter={showAfterContent}
+              onToggle={setShowAfterContent}
+              beforeLabel="Original Input"
+              afterLabel="AI Generated"
+            />
+
+            {/* Content Comparison */}
+            <ContentComparison
+              beforeContent={originalContent}
+              afterContent={generatedContent}
+              showAfter={showAfterContent}
+            />
+          </motion.div>
+        )}
 
         {/* Upsell Banner */}
         <motion.div

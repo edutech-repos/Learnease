@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Gamepad2, Image, X, Download } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Image, X, Download, FileText, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 interface ContentReviewProps {
@@ -7,13 +7,15 @@ interface ContentReviewProps {
   onBack: () => void;
   onStartQuiz: () => void;
   userType?: 'premium' | 'free' | null;
+  originalContent?: string;
 }
 
-export function ContentReview({ onBack, onStartQuiz, userType = 'free' }: ContentReviewProps) {
+export function ContentReview({ onBack, onStartQuiz, userType = 'free', originalContent }: ContentReviewProps) {
   const [showDiagram, setShowDiagram] = useState(false);
   const [diagramsRemaining, setDiagramsRemaining] = useState(
     userType === 'premium' ? 30 : 5
   );
+  const [showAfterContent, setShowAfterContent] = useState(true);
   // Mock lesson data - in real app this would come from props or API
   const lessonContent = {
     title: 'Introduction to Thermodynamics',
@@ -108,115 +110,179 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
         </div>
       </div>
 
+      {/* Before/After Toggle */}
+      {originalContent && (
+        <div className="max-w-4xl mx-auto px-4 pt-4">
+          <div className="flex justify-center">
+            <div className="bg-[#1E1B4B] p-1.5 rounded-2xl border border-[#06B6D4]/30 inline-flex items-center gap-1 relative">
+              <motion.div
+                className="absolute inset-y-1.5 rounded-xl"
+                initial={false}
+                animate={{
+                  left: showAfterContent ? 'calc(50% + 2px)' : '6px',
+                  right: showAfterContent ? '6px' : 'calc(50% + 2px)',
+                  background: showAfterContent
+                    ? 'linear-gradient(135deg, #F472B6, #EC4899)'
+                    : 'linear-gradient(135deg, #06B6D4, #3B82F6)',
+                  boxShadow: showAfterContent
+                    ? '0 0 20px rgba(244, 114, 182, 0.4)'
+                    : '0 0 20px rgba(6, 182, 212, 0.4)'
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+              <motion.button
+                onClick={() => setShowAfterContent(false)}
+                className={`relative z-10 flex items-center gap-2 px-5 py-2.5 rounded-xl transition-colors ${!showAfterContent ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                whileTap={{ scale: 0.98 }}
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm font-medium">Original Input</span>
+              </motion.button>
+              <motion.button
+                onClick={() => setShowAfterContent(true)}
+                className={`relative z-10 flex items-center gap-2 px-5 py-2.5 rounded-xl transition-colors ${showAfterContent ? 'text-white' : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">AI Generated</span>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className="max-w-4xl mx-auto p-4 lg:p-8 pb-8">
-        <motion.div
-          className="bg-[#312E81] rounded-2xl p-6 lg:p-10 border-2 border-[#06B6D4]/30"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {/* Rich Text Content */}
-          <div className="prose prose-invert max-w-none">
-            {lessonContent.content.split('\n').map((line, idx) => {
-              // H1
-              if (line.startsWith('# ')) {
-                return (
-                  <motion.h1
-                    key={idx}
-                    className="text-3xl lg:text-4xl text-white mb-6 mt-8 first:mt-0"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.02 }}
-                  >
-                    {line.replace('# ', '')}
-                  </motion.h1>
-                );
-              }
+        {/* Show Original Content */}
+        {originalContent && !showAfterContent ? (
+          <motion.div
+            className="bg-[#312E81] rounded-2xl p-6 lg:p-10 border-2 border-[#06B6D4]/30"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            key="before-content"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <FileText className="w-6 h-6 text-[#06B6D4]" />
+              <h2 className="text-xl text-[#06B6D4]">Original Input</h2>
+            </div>
+            <div className="bg-[#1E1B4B] rounded-xl p-6 border border-[#06B6D4]/20">
+              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed text-lg">
+                {originalContent}
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            className="bg-[#312E81] rounded-2xl p-6 lg:p-10 border-2 border-[#06B6D4]/30"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            key="after-content"
+          >
+            {/* Rich Text Content */}
+            <div className="prose prose-invert max-w-none">
+              {lessonContent.content.split('\n').map((line, idx) => {
+                // H1
+                if (line.startsWith('# ')) {
+                  return (
+                    <motion.h1
+                      key={idx}
+                      className="text-3xl lg:text-4xl text-white mb-6 mt-8 first:mt-0"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                    >
+                      {line.replace('# ', '')}
+                    </motion.h1>
+                  );
+                }
 
-              // H2
-              if (line.startsWith('## ')) {
-                return (
-                  <motion.h2
-                    key={idx}
-                    className="text-2xl lg:text-3xl text-[#06B6D4] mb-4 mt-8 flex items-center gap-3"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.02 }}
-                  >
-                    <span className="w-2 h-8 bg-[#06B6D4] rounded-full glow-cyan" />
-                    {line.replace('## ', '')}
-                  </motion.h2>
-                );
-              }
+                // H2
+                if (line.startsWith('## ')) {
+                  return (
+                    <motion.h2
+                      key={idx}
+                      className="text-2xl lg:text-3xl text-[#06B6D4] mb-4 mt-8 flex items-center gap-3"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                    >
+                      <span className="w-2 h-8 bg-[#06B6D4] rounded-full glow-cyan" />
+                      {line.replace('## ', '')}
+                    </motion.h2>
+                  );
+                }
 
-              // H3
-              if (line.startsWith('### ')) {
-                return (
-                  <motion.h3
-                    key={idx}
-                    className="text-xl lg:text-2xl text-[#F472B6] mb-3 mt-6"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.02 }}
-                  >
-                    {line.replace('### ', '')}
-                  </motion.h3>
-                );
-              }
+                // H3
+                if (line.startsWith('### ')) {
+                  return (
+                    <motion.h3
+                      key={idx}
+                      className="text-xl lg:text-2xl text-[#F472B6] mb-3 mt-6"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                    >
+                      {line.replace('### ', '')}
+                    </motion.h3>
+                  );
+                }
 
-              // Bold text
-              if (line.startsWith('**') && line.endsWith('**')) {
-                return (
-                  <motion.p
-                    key={idx}
-                    className="text-[#FBBF24] mb-3 mt-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.02 }}
-                  >
-                    {line.replace(/\*\*/g, '')}
-                  </motion.p>
-                );
-              }
+                // Bold text
+                if (line.startsWith('**') && line.endsWith('**')) {
+                  return (
+                    <motion.p
+                      key={idx}
+                      className="text-[#FBBF24] mb-3 mt-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: idx * 0.02 }}
+                    >
+                      {line.replace(/\*\*/g, '')}
+                    </motion.p>
+                  );
+                }
 
-              // Bullet points
-              if (line.startsWith('- ')) {
-                return (
-                  <motion.div
-                    key={idx}
-                    className="flex items-start gap-3 mb-2 ml-4"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.02 }}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#06B6D4] mt-2 flex-shrink-0" />
-                    <p className="text-gray-300 flex-1">
-                      {line.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')}
-                    </p>
-                  </motion.div>
-                );
-              }
+                // Bullet points
+                if (line.startsWith('- ')) {
+                  return (
+                    <motion.div
+                      key={idx}
+                      className="flex items-start gap-3 mb-2 ml-4"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-[#06B6D4] mt-2 flex-shrink-0" />
+                      <p className="text-gray-300 flex-1">
+                        {line.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')}
+                      </p>
+                    </motion.div>
+                  );
+                }
 
-              // Regular paragraph
-              if (line.trim() && !line.startsWith('#')) {
-                return (
-                  <motion.p
-                    key={idx}
-                    className="text-gray-300 mb-4 leading-relaxed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.02 }}
-                    dangerouslySetInnerHTML={{
-                      __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-                    }}
-                  />
-                );
-              }
+                // Regular paragraph
+                if (line.trim() && !line.startsWith('#')) {
+                  return (
+                    <motion.p
+                      key={idx}
+                      className="text-gray-300 mb-4 leading-relaxed"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: idx * 0.02 }}
+                      dangerouslySetInnerHTML={{
+                        __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                      }}
+                    />
+                  );
+                }
 
-              return null;
-            })}
-          </div>
-        </motion.div>
+                return null;
+              })}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Diagram Modal */}

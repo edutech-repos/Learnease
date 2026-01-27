@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
-import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap } from 'lucide-react';
+import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap, RotateCcw, Sparkles, Save } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
+import { ContentToggle, ContentComparison } from './ContentToggle';
 
 interface DashboardPremiumProps {
   userName: string;
@@ -19,6 +20,10 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string>('');
   const [learningMode, setLearningMode] = useState<'learning' | 'exam'>('learning');
+  const [showContentComparison, setShowContentComparison] = useState(false);
+  const [showAfterContent, setShowAfterContent] = useState(true);
+  const [originalContent, setOriginalContent] = useState('');
+  const [generatedContent, setGeneratedContent] = useState('');
 
   const maxChars = 4000; // Premium user limit
   const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
@@ -65,8 +70,75 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
 
   const handleIgniteLesson = () => {
     if (textInput.length > 0 || selectedFile) {
-      onIgniteLesson?.();
+      // Store original content
+      setOriginalContent(textInput || (selectedFile ? `File: ${selectedFile.name}` : ''));
+
+      // Premium Thermodynamics lesson content (enhanced version)
+      const mockGeneratedContent = `# Introduction to Thermodynamics ⚡️ Premium Edition
+
+## The Four Laws of Thermodynamics
+
+### Zeroth Law
+Thermal equilibrium is transitive - if two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other.
+- **Key Insight:** This law allows us to define temperature as a measurable quantity
+- **Application:** Thermometers work based on this principle
+
+### First Law (Conservation of Energy)
+Energy cannot be created or destroyed in an isolated system.
+- ΔU = Q - W (Change in internal energy = Heat added - Work done)
+- This is essentially the law of conservation of energy
+- **Advanced Note:** For steady-flow systems: dE/dt = Q̇ - Ẇ
+
+### Second Law (Entropy)
+Entropy always increases in isolated systems.
+- Heat naturally flows from hot to cold objects
+- Heat engines cannot be 100% efficient
+- Carnot efficiency sets the theoretical maximum
+- **Key Formula:** ΔS ≥ Q/T (Clausius Inequality)
+
+### Third Law
+As T → 0K, entropy → 0
+- As temperature approaches absolute zero, the entropy of a perfect crystal approaches zero
+- **Implication:** Absolute zero is unattainable in a finite number of steps
+
+## Advanced Applications
+- Heat engines (cars, power plants, jet engines)
+- Refrigeration cycles (HVAC systems, cryogenics)
+- Weather patterns and atmospheric dynamics
+- Chemical reaction spontaneity (Gibbs free energy)
+- Biological systems and metabolism
+
+## Key Formulas & Equations
+| Formula | Description |
+|---------|-------------|
+| ΔU = Q - W | First Law (closed system) |
+| η = 1 - (T_cold / T_hot) | Carnot Efficiency |
+| PV = nRT | Ideal Gas Law |
+| ΔG = ΔH - TΔS | Gibbs Free Energy |
+| COP = Q_L / W | Coefficient of Performance |
+
+## Weakness Analysis 🎯
+
+Based on your input, the AI has identified these areas for improvement:
+- Focus on understanding entropy conceptually
+- Practice Carnot cycle calculations
+- Review thermodynamic process types (isothermal, adiabatic, isobaric, isochoric)
+
+## Summary
+Thermodynamics governs how energy moves and transforms in physical systems. This premium lesson covers advanced concepts and real-world applications essential for engineering, chemistry, and physics.`;
+
+      setGeneratedContent(mockGeneratedContent);
+      setShowContentComparison(true);
+      setShowAfterContent(true);
     }
+  };
+
+  const handleResetContent = () => {
+    setShowContentComparison(false);
+    setTextInput('');
+    setSelectedFile(null);
+    setOriginalContent('');
+    setGeneratedContent('');
   };
 
   const weaknessTopics = [
@@ -242,8 +314,8 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
               <button
                 onClick={() => setLearningMode('learning')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'learning'
-                    ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <BookOpen className="w-4 h-4" />
@@ -252,8 +324,8 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
               <button
                 onClick={() => setLearningMode('exam')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'exam'
-                    ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <GraduationCap className="w-4 h-4" />
@@ -290,6 +362,66 @@ export function DashboardPremium({ userName, onNavigate, onShowProfile, onLogout
             </p>
           )}
         </div>
+
+        {/* Content Comparison Section */}
+        {showContentComparison && (
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* Header with Action Buttons */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-[#FBBF24]" />
+                <h3 className="text-xl text-white">Premium Lesson Generated ⚡️</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <motion.button
+                  onClick={handleResetContent}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#312E81] border border-[#FBBF24]/30 rounded-lg text-[#FBBF24] hover:bg-[#FBBF24]/10 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="text-sm">New Lesson</span>
+                </motion.button>
+                <motion.button
+                  onClick={() => alert('Lesson saved to My Lessons! 🎉')}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#312E81] border border-[#10B981]/50 rounded-lg text-[#10B981] hover:bg-[#10B981]/10 transition-colors"
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Save className="w-4 h-4" />
+                  <span className="text-sm">Save Lesson</span>
+                </motion.button>
+                <motion.button
+                  onClick={() => onIgniteLesson?.()}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FBBF24] to-[#F59E0B] rounded-lg text-[#1E1B4B] font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-sm">Continue to Quiz →</span>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Toggle */}
+            <ContentToggle
+              showAfter={showAfterContent}
+              onToggle={setShowAfterContent}
+              beforeLabel="Original Input"
+              afterLabel="AI Generated"
+            />
+
+            {/* Content Comparison */}
+            <ContentComparison
+              beforeContent={originalContent}
+              afterContent={generatedContent}
+              showAfter={showAfterContent}
+            />
+          </motion.div>
+        )}
 
         {/* Weakness Breakers Section */}
         <div className="mb-8">
