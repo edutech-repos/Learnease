@@ -16,9 +16,10 @@ interface DashboardFreeProps {
   onIgniteLesson?: () => void;
   onShowComparison?: () => void;
   onViewTrendingTopic?: (topic: any) => void;
+  onStartQuiz?: (lessonId: number) => void;
 }
 
-export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison, onViewTrendingTopic }: DashboardFreeProps) {
+export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison, onViewTrendingTopic, onStartQuiz }: DashboardFreeProps) {
   const [textInput, setTextInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -155,12 +156,12 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
           {/* Top Half - PDF Upload Area */}
           <motion.div
             className={`relative bg-[#1E1B4B] rounded-t-2xl p-8 lg:p-12 border-2 transition-all cursor-pointer ${uploadError
-                ? 'border-[#EF4444] glow-red'
-                : selectedFile
-                  ? 'border-[#10B981] glow-green'
-                  : isDragging
-                    ? 'border-solid border-[#06B6D4] glow-cyan'
-                    : 'border-dashed border-[#06B6D4]/60'
+              ? 'border-[#EF4444] glow-red'
+              : selectedFile
+                ? 'border-[#10B981] glow-green'
+                : isDragging
+                  ? 'border-solid border-[#06B6D4] glow-cyan'
+                  : 'border-dashed border-[#06B6D4]/60'
               }`}
             onDragEnter={() => setIsDragging(true)}
             onDragLeave={() => setIsDragging(false)}
@@ -243,10 +244,10 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
           {/* Bottom Half - Text Input Area */}
           <motion.div
             className={`relative bg-[#312E81] rounded-b-2xl p-6 lg:p-8 border-2 border-t-0 transition-all ${isAtLimit
-                ? 'border-[#EF4444] glow-red'
-                : isFocused
-                  ? 'border-[#06B6D4] glow-cyan'
-                  : 'border-[#06B6D4]/30'
+              ? 'border-[#EF4444] glow-red'
+              : isFocused
+                ? 'border-[#06B6D4] glow-cyan'
+                : 'border-[#06B6D4]/30'
               }`}
             animate={isAtLimit ? {
               boxShadow: [
@@ -273,10 +274,10 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
             <div className="mt-3 flex justify-end">
               <motion.span
                 className={`text-sm ${isAtLimit
-                    ? 'text-[#EF4444]'
-                    : textInput.length > 0
-                      ? 'text-[#FBBF24]'
-                      : 'text-gray-500'
+                  ? 'text-[#EF4444]'
+                  : textInput.length > 0
+                    ? 'text-[#FBBF24]'
+                    : 'text-gray-500'
                   }`}
                 animate={isAtLimit ? {
                   scale: [1, 1.1, 1]
@@ -294,8 +295,8 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
               <button
                 onClick={() => setLearningMode('learning')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'learning'
-                    ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#06B6D4] text-white shadow-lg shadow-[#06B6D4]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <BookOpen className="w-4 h-4" />
@@ -304,8 +305,8 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
               <button
                 onClick={() => setLearningMode('exam')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${learningMode === 'exam'
-                    ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
-                    : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#F472B6] text-white shadow-lg shadow-[#F472B6]/20'
+                  : 'text-gray-400 hover:text-white'
                   }`}
               >
                 <GraduationCap className="w-4 h-4" />
@@ -434,7 +435,7 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
                 </motion.button>
 
                 <motion.button
-                  onClick={() => alert('Starting quiz... (Feature coming soon!)')}
+                  onClick={() => onStartQuiz?.(1)}
                   className="flex-1 py-3 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-xl text-white flex items-center justify-center gap-2 relative overflow-hidden group"
                   whileHover={{
                     scale: 1.02,
@@ -591,10 +592,10 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-4xl">{topic.icon}</span>
                     <div className={`px-2 py-1 rounded-full text-xs ${topic.difficulty === 'Beginner'
-                        ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/50'
-                        : topic.difficulty === 'Intermediate'
-                          ? 'bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/50'
-                          : 'bg-[#F472B6]/20 text-[#F472B6] border border-[#F472B6]/50'
+                      ? 'bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/50'
+                      : topic.difficulty === 'Intermediate'
+                        ? 'bg-[#FBBF24]/20 text-[#FBBF24] border border-[#FBBF24]/50'
+                        : 'bg-[#F472B6]/20 text-[#F472B6] border border-[#F472B6]/50'
                       }`}>
                       {topic.difficulty}
                     </div>

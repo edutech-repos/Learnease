@@ -55,38 +55,73 @@ export async function igniteLessonMock(request: IgniteLessonRequest): Promise<We
 
     return {
         userId: request.userId,
-        htmlContent: `<h2>Generated Content</h2>
-<p>This is AI-generated content based on your input about: "${request.rawText.slice(0, 50)}..."</p>
-<h3>Key Points</h3>
-<ul>
-  <li><strong>Point 1:</strong> Important concept extracted from your text</li>
-  <li><strong>Point 2:</strong> Another key learning objective</li>
-  <li><strong>Point 3:</strong> Critical information to remember</li>
-</ul>
-<blockquote>Key takeaway: Understanding these concepts is essential for mastery.</blockquote>
-<h3>Summary</h3>
-<p>This lesson covers the fundamental aspects of the topic you provided.</p>`,
-        textContent: `Generated Content
+        htmlContent: `# Introduction to Thermodynamics
 
-This is AI-generated content based on your input.
+## The Four Laws
 
-Key Points:
-- Point 1: Important concept extracted from your text
-- Point 2: Another key learning objective
-- Point 3: Critical information to remember
+### Zeroth Law
+Thermal equilibrium is transitive
 
-Summary:
-This lesson covers the fundamental aspects of the topic you provided.`,
+### First Law
+Energy cannot be created or destroyed
+- ΔU = Q - W
+
+### Second Law
+Entropy always increases
+
+### Third Law
+As T → 0K, entropy → 0
+
+## Applications
+- Heat engines
+- Refrigeration
+- Weather patterns`,
+        textContent: `Introduction to Thermodynamics
+
+The Four Laws
+
+Zeroth Law
+Thermal equilibrium is transitive
+
+First Law
+Energy cannot be created or destroyed
+- ΔU = Q - W
+
+Second Law
+Entropy always increases
+
+Third Law
+As T → 0K, entropy → 0
+
+Applications
+- Heat engines
+- Refrigeration
+- Weather patterns`,
         mcqs: [
             {
-                question: "What is the main topic of this lesson?",
-                options: ["Option A", "Option B", "Option C", "Option D"],
-                answer: "Option A"
+                question: "What does the First Law of Thermodynamics state?",
+                options: ["Energy cannot be created or destroyed", "Entropy always increases", "Thermal equilibrium is transitive", "Absolute zero is unattainable"],
+                answer: "Energy cannot be created or destroyed"
             },
             {
-                question: "Which concept is most important?",
-                options: ["Concept 1", "Concept 2", "Concept 3", "Concept 4"],
-                answer: "Concept 1"
+                question: "Which law is related to 'Entropy always increases'?",
+                options: ["Zeroth Law", "First Law", "Second Law", "Third Law"],
+                answer: "Second Law"
+            },
+            {
+                question: "What is the formula for the First Law?",
+                options: ["ΔU = Q - W", "F = ma", "E = mc^2", "PV = nRT"],
+                answer: "ΔU = Q - W"
+            },
+            {
+                question: "As Temperature approaches 0 Kelvin, what happens to entropy according to the Third Law?",
+                options: ["It approaches infinity", "It approaches zero", "It becomes constant but non-zero", "It fluctuates wildly"],
+                answer: "It approaches zero"
+            },
+            {
+                question: "Which of these is an application of thermodynamics?",
+                options: ["Heat engines", "Social structures", "Abstract algebra", "Grammar rules"],
+                answer: "Heat engines"
             }
         ]
     };

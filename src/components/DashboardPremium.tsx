@@ -13,9 +13,10 @@ interface DashboardPremiumProps {
   onLogout: () => void;
   onIgniteLesson?: () => void;
   onShowComparison?: () => void;
+  onStartQuiz?: (lessonId: number) => void;
 }
 
-export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison }: DashboardPremiumProps) {
+export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison, onStartQuiz }: DashboardPremiumProps) {
   const [textInput, setTextInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -443,7 +444,7 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
                 </motion.button>
 
                 <motion.button
-                  onClick={() => alert('Starting quiz... (Feature coming soon!)')}
+                  onClick={() => onStartQuiz?.(1)}
                   className="flex-1 py-3 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-xl text-white flex items-center justify-center gap-2 relative overflow-hidden group"
                   whileHover={{
                     scale: 1.02,

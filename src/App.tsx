@@ -85,6 +85,7 @@ export default function App() {
           onLogout={handleLogout}
           onIgniteLesson={handleIgniteLesson}
           onShowComparison={handleShowComparison}
+          onStartQuiz={handleStartQuiz}
         />
       )}
 
@@ -97,6 +98,7 @@ export default function App() {
           onIgniteLesson={handleIgniteLesson}
           onShowComparison={handleShowComparison}
           onViewTrendingTopic={handleShowTrendingTopic}
+          onStartQuiz={handleStartQuiz}
         />
       )}
 
