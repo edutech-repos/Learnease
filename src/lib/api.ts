@@ -1,6 +1,6 @@
 // API service for LearnEase webhook calls
 
-const WEBHOOK_BASE_URL = import.meta.env.VITE_WEBHOOK_BASE_URL || 'https://your-n8n-instance.com/webhook';
+const WEBHOOK_BASE_URL = 'https://amrutpatankar.app.n8n.cloud/webhook';
 
 export interface WebhookResponse {
     userId: string;
