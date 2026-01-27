@@ -29,4 +29,8 @@ dist-ssr
 .env.test.local
 .env.production.local
 .env.local
-supabase.md
+
+
+supabase.md 
+src/lib/supabase.ts
+src/lib/types.ts

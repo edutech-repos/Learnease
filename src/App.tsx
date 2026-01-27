@@ -22,13 +22,13 @@ export default function App() {
   const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
   const [selectedTrendingTopic, setSelectedTrendingTopic] = useState<any>(null);
 
-  const handleLogin = (email: string) => {
-    if (email === 'premium@spark.com') {
+  const handleLogin = (email: string, isPremium: boolean) => {
+    if (isPremium) {
       setUserType('premium');
-      setUserName('Alex Chen');
+      setUserName(email.split('@')[0] || 'Premium User');
     } else {
       setUserType('free');
-      setUserName('Jordan Smith');
+      setUserName(email.split('@')[0] || 'User');
     }
     setCurrentScreen('dashboard');
   };
