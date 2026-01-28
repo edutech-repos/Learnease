@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
 import { ContentComparison, ContentToggle } from './ContentToggle';
 import { igniteLesson, igniteLessonMock } from '../lib/api';
+import { extractTextFromPDF, isPDFFile } from '../lib/pdfExtractor';
 import { LoadingOverlay } from './LoadingOverlay';
 
 interface DashboardFreeProps {
@@ -34,7 +35,7 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const maxChars = 1000; // Free user limit
+  const maxChars = 4000; // Free user limit
   const maxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
   const isAtLimit = textInput.length >= maxChars;
 
@@ -72,20 +73,37 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= maxChars) {
-      setTextInput(e.target.value);
-    }
+    // Truncate text if it exceeds the limit
+    const newValue = e.target.value.length > maxChars
+      ? e.target.value.substring(0, maxChars)
+      : e.target.value;
+    setTextInput(newValue);
   };
 
   const handleIgniteLesson = async () => {
     if (textInput.length > 0 || selectedFile) {
-      // Store original content
-      const rawText = textInput || (selectedFile ? `File: ${selectedFile.name} ` : '');
-      setOriginalContent(rawText);
       setApiError(null);
       setIsLoading(true);
 
+      let rawText = textInput;
+
       try {
+
+        // If a file is selected and no text input, extract text from file
+        if (selectedFile && !textInput) {
+          if (isPDFFile(selectedFile)) {
+            console.log('Extracting text from PDF...');
+            rawText = await extractTextFromPDF(selectedFile, maxChars);
+            console.log(`Extracted ${rawText.length} characters from PDF`);
+          } else {
+            // For other file types, just show the filename for now
+            rawText = `File: ${selectedFile.name}`;
+          }
+        }
+
+        // Store original content
+        setOriginalContent(rawText);
+
         // Call the webhook API
         const response = await igniteLesson({
           userId: userId,

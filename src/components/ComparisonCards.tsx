@@ -9,7 +9,7 @@ interface ComparisonCardsProps {
 export function ComparisonCards({ onClose, onUpgrade }: ComparisonCardsProps) {
   const features = [
     { name: 'Lesson Credits', free: '20 per month', premium: '300 per month' },
-    { name: 'Character Limit', free: '1,000 chars', premium: '4,000 chars' },
+    { name: 'Character Limit', free: '4,000 chars', premium: '10,000 chars' },
     { name: 'File Upload Size', free: '10 MB', premium: '10 MB' },
     { name: 'AI Diagram Generation', free: '5 per week', premium: '30 per week' },
     { name: 'AI Quiz Generation', free: 'Basic', premium: 'Advanced' },
