@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CloudUpload, Zap, Shield, TrendingUp, BookOpen, GraduationCap, RotateCcw, Sparkles, Save, Loader2, Gamepad2 } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
-import { ContentComparison } from './ContentToggle';
+import { ContentComparison, ContentToggle } from './ContentToggle';
 import { igniteLesson, igniteLessonMock } from '../lib/api';
 import { LoadingOverlay } from './LoadingOverlay';
 interface DashboardPremiumProps {
@@ -417,11 +417,21 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
                 </div>
               )}
             </div>
+            {/* Before/After Toggle */}
+            <ContentToggle
+              showAfter={showAfterContent}
+              onToggle={setShowAfterContent}
+              beforeLabel="Original Text"
+              afterLabel="Generated Lesson"
+            />
+
             {/* Content Comparison */}
             <ContentComparison
               beforeContent={originalContent}
               afterContent={generatedContent}
               showAfter={showAfterContent}
+              beforeLabel="Original Text"
+              afterLabel="Generated Lesson"
             />
 
             {/* Action Buttons Row */}

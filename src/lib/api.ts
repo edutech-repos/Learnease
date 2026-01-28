@@ -2,6 +2,40 @@
 
 const WEBHOOK_BASE_URL = 'https://amrutpatankar.app.n8n.cloud/webhook';
 
+/**
+ * Sanitizes text to ensure it's plain text without special characters
+ * that could cause JSON formatting issues in the n8n webhook
+ */
+function sanitizeText(text: string): string {
+    return text
+        // Normalize Unicode characters to their ASCII equivalents
+        .normalize('NFKD')
+        // IMPORTANT: Replace ALL double quotes with single quotes to prevent JSON breaking in n8n
+        .replace(/[""\u201C\u201D]/g, "'")  // All types of double quotes → single quote
+        // Replace smart/curly single quotes with straight single quotes
+        .replace(/[\u2018\u2019]/g, "'")  // Single curly quotes
+        // Replace em-dash and en-dash with regular hyphen
+        .replace(/[\u2013\u2014]/g, '-')
+        // Replace ellipsis with three dots
+        .replace(/\u2026/g, '...')
+        // Replace non-breaking spaces with regular spaces
+        .replace(/\u00A0/g, ' ')
+        // Remove other problematic Unicode characters
+        .replace(/[\u2022\u2023\u25E6\u2043\u2219]/g, '-')  // Various bullet points
+        // Remove zero-width characters
+        .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
+        // Normalize line breaks to spaces (newlines can also break JSON in templates)
+        .replace(/\r\n/g, ' ')
+        .replace(/\r/g, ' ')
+        .replace(/\n/g, ' ')
+        // Remove control characters
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        // Collapse multiple spaces
+        .replace(/\s+/g, ' ')
+        // Trim whitespace
+        .trim();
+}
+
 export interface WebhookResponse {
     userId: string;
     htmlContent: string;
@@ -23,26 +57,82 @@ export interface IgniteLessonRequest {
  * and returns structured HTML content with MCQs
  */
 export async function igniteLesson(request: IgniteLessonRequest): Promise<WebhookResponse> {
-    const response = await fetch(`${WEBHOOK_BASE_URL}/unstructured-input`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
+    // Sanitize the raw text to remove special characters that could cause JSON issues
+    const sanitizedText = sanitizeText(request.rawText);
+
+    // Log sanitization for debugging
+    console.log('=== Text Sanitization ===');
+    console.log('Original text (first 200 chars):', request.rawText.substring(0, 200));
+    console.log('Sanitized text (first 200 chars):', sanitizedText.substring(0, 200));
+
+    // Check for quote characters specifically
+    const origQuotes = request.rawText.match(/["'\u201C\u201D\u2018\u2019]/g) || [];
+    const sanitizedQuotes = sanitizedText.match(/["'\u201C\u201D\u2018\u2019]/g) || [];
+    console.log('Original quote chars:', origQuotes.map(c => `"${c}" (code: ${c.charCodeAt(0)})`));
+    console.log('Sanitized quote chars:', sanitizedQuotes.map(c => `"${c}" (code: ${c.charCodeAt(0)})`));
+
+    // Check for em-dashes
+    const origDashes = request.rawText.match(/[—–\u2013\u2014-]/g) || [];
+    console.log('Dash chars found:', origDashes.map(c => `"${c}" (code: ${c.charCodeAt(0)})`));
+
+    console.log('Length change:', request.rawText.length, '→', sanitizedText.length);
+
+    // Build the request payload
+    const payload = {
+        userId: request.userId,
+        rawText: sanitizedText,
+    };
+
+    // Log what we're sending for debugging
+    console.log('Sending to webhook:', {
+        url: `${WEBHOOK_BASE_URL}/unstructured-input`,
+        payload: {
+            userId: payload.userId,
+            rawTextLength: payload.rawText.length,
+            rawTextPreview: payload.rawText.substring(0, 100) + '...',
+        }
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Webhook failed: ${response.status} - ${errorText}`);
-    }
-
-    const text = await response.text();
     try {
-        const data = JSON.parse(text);
-        return data as WebhookResponse;
-    } catch (e) {
-        console.error('Failed to parse webhook response:', text);
-        throw new Error(`Invalid response from webhook: ${text.substring(0, 100)}...`);
+        const response = await fetch(`${WEBHOOK_BASE_URL}/unstructured-input`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        console.log('Webhook response status:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Webhook error response:', errorText);
+            throw new Error(`Webhook failed: ${response.status} - ${errorText || 'No error message'}`);
+        }
+
+        const responseText = await response.text();
+        console.log('Webhook raw response:', responseText.substring(0, 200));
+
+        // Handle empty response
+        if (!responseText || responseText.trim() === '') {
+            throw new Error('Webhook returned empty response');
+        }
+
+        try {
+            const data = JSON.parse(responseText);
+            return data as WebhookResponse;
+        } catch (parseError) {
+            console.error('Failed to parse webhook response as JSON:', responseText);
+            throw new Error(`Invalid JSON response from webhook: ${responseText.substring(0, 100)}`);
+        }
+    } catch (fetchError) {
+        // Network or fetch errors
+        if (fetchError instanceof TypeError) {
+            console.error('Network error:', fetchError);
+            throw new Error(`Network error calling webhook: ${fetchError.message}`);
+        }
+        throw fetchError;
     }
 }
 

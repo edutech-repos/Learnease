@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CloudUpload, Zap, Flame, Lock, Sparkles, BookOpen, GraduationCap, RotateCcw, Save, Loader2, Gamepad2 } from 'lucide-react';
 import { useState } from 'react';
 import { NavigationLayout } from './NavigationLayout';
-import { ContentComparison } from './ContentToggle';
+import { ContentComparison, ContentToggle } from './ContentToggle';
 import { igniteLesson, igniteLessonMock } from '../lib/api';
 import { LoadingOverlay } from './LoadingOverlay';
 
@@ -408,11 +408,21 @@ export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, o
               )}
             </div>
 
+            {/* Before/After Toggle */}
+            <ContentToggle
+              showAfter={showAfterContent}
+              onToggle={setShowAfterContent}
+              beforeLabel="Original Text"
+              afterLabel="Generated Lesson"
+            />
+
             {/* Content Comparison */}
             <ContentComparison
               beforeContent={originalContent}
               afterContent={generatedContent}
               showAfter={showAfterContent}
+              beforeLabel="Original Text"
+              afterLabel="Generated Lesson"
             />
 
             {/* Action Buttons Row */}
