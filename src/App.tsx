@@ -19,10 +19,11 @@ export default function App() {
   const [userType, setUserType] = useState<UserType>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
   const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
   const [selectedTrendingTopic, setSelectedTrendingTopic] = useState<any>(null);
 
-  const handleLogin = (email: string, isPremium: boolean) => {
+  const handleLogin = (email: string, isPremium: boolean, id: string) => {
     if (isPremium) {
       setUserType('premium');
       setUserName(email.split('@')[0] || 'Premium User');
@@ -30,12 +31,14 @@ export default function App() {
       setUserType('free');
       setUserName(email.split('@')[0] || 'User');
     }
+    setUserId(id);
     setCurrentScreen('dashboard');
   };
 
   const handleLogout = () => {
     setUserType(null);
     setUserName('');
+    setUserId(null);
     setCurrentScreen('auth');
     setShowProfile(false);
     setCurrentLessonId(null);
@@ -80,6 +83,7 @@ export default function App() {
       {currentScreen === 'dashboard' && userType === 'premium' && (
         <DashboardPremium
           userName={userName}
+          userId={userId || undefined}
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}
@@ -92,6 +96,7 @@ export default function App() {
       {currentScreen === 'dashboard' && userType === 'free' && (
         <DashboardFree
           userName={userName}
+          userId={userId || undefined}
           onNavigate={setCurrentScreen}
           onShowProfile={() => setShowProfile(true)}
           onLogout={handleLogout}

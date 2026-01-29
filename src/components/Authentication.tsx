@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn, signUp } from '../lib/supabase';
 
 interface AuthenticationProps {
-  onLogin: (email: string, isPremium: boolean) => void;
+  onLogin: (email: string, isPremium: boolean, userId: string) => void;
 }
 
 export function Authentication({ onLogin }: AuthenticationProps) {
@@ -40,7 +40,7 @@ export function Authentication({ onLogin }: AuthenticationProps) {
 
         if (data?.user) {
           // New users start as free tier
-          onLogin(email, false);
+          onLogin(email, false, data.user.id);
         }
       } else {
         const { data, error: signInError } = await signIn(email, password);
@@ -54,7 +54,7 @@ export function Authentication({ onLogin }: AuthenticationProps) {
         if (data?.user) {
           // Check if user is premium (you can fetch from profiles table)
           const isPremium = data.user.email === 'premium@spark.com'; // Fallback for mock
-          onLogin(email, isPremium);
+          onLogin(email, isPremium, data.user.id);
         }
       }
     } catch (err) {
