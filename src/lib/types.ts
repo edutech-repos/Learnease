@@ -8,7 +8,6 @@ export interface StudyMaterial {
     structured_content: string | null;
     quiz_data: QuizQuestion[] | null;
     quiz_score: number;
-    mermaid_code: string | null;
     image_path: string | null;
     created_at: string;
 }

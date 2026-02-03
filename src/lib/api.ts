@@ -350,6 +350,7 @@ export interface SaveStudyMaterialResponse {
     success: boolean;
     imagePath?: string;
     message?: string;
+    id?: string;
 }
 
 /**
@@ -359,52 +360,89 @@ export interface SaveStudyMaterialResponse {
  * 2. Uploads the diagram to Supabase Storage
  * 3. Saves all content to the study_materials table
  */
-export async function saveStudyMaterial(request: SaveStudyMaterialRequest): Promise<SaveStudyMaterialResponse> {
-    const payload = {
-        userId: request.userId,
-        title: sanitizeText(request.title),
-        textContent: sanitizeText(request.textContent),
-        htmlContent: request.htmlContent,
-        mcqs: request.mcqs,
-        topic: request.topic || request.title,
-    };
 
+import { createStudyMaterial } from './supabase';
+
+export async function saveStudyMaterial(request: SaveStudyMaterialRequest): Promise<SaveStudyMaterialResponse> {
     console.log('Saving study material for user:', request.userId);
 
     try {
-        const response = await fetch(`${WEBHOOK_BASE_URL}/generate-diagram`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
+        // Reverted: Direct DB insert as per original requirement
+        const { data, error } = await createStudyMaterial(
+            request.userId,
+            request.title,
+            request.textContent,
+            request.htmlContent,
+            request.mcqs
+        );
 
-        if (!response.ok) {
-            throw new Error(`Save webhook failed with status: ${response.status}`);
-        }
-
-        const responseText = await response.text();
-        console.log('Save response:', responseText);
-
-        // The webhook returns the inserted study_materials row
-        if (responseText && responseText.trim()) {
-            const data = JSON.parse(responseText);
-            // Response is an array with the inserted row
-            const insertedRow = Array.isArray(data) ? data[0] : data;
-            return {
-                success: true,
-                imagePath: insertedRow?.image_path,
-                message: 'Content saved successfully!'
-            };
+        if (error) {
+            console.error('Supabase error:', error);
+            throw new Error(`Database save failed: ${error.message}`);
         }
 
         return {
             success: true,
-            message: 'Content saved!'
+            message: 'Content saved successfully!',
+            id: data?.id
         };
     } catch (error) {
         console.error('Save study material failed:', error);
+        throw error;
+    }
+}
+
+export interface GenerateDiagramRequest {
+    userId: string;
+    topic: string;
+    htmlContent: string;
+    textContent: string;
+    mcqs: any[];
+}
+
+export async function generateDiagram(request: GenerateDiagramRequest): Promise<any> {
+    const sanitizedRequest = {
+        ...request,
+        topic: sanitizeText(request.topic),
+        htmlContent: request.htmlContent, // HTML might contain specific formatted chars we want to keep, or we should be careful. 
+        // Wait, sanitizeText aggressively removes special chars. For HTML it might break usage of quotes in attributes if not careful, 
+        // but the sanitizeText implementation replaces quotes with single quotes. 
+        // Let's sanitize textContent and topic only for now, as those are most likely to have weird copy-paste artifacts.
+        // Actually, the user's log showed the textContent having the special chars.
+        textContent: sanitizeText(request.textContent)
+    };
+
+    console.log('Triggering diagram generation workflow for:', sanitizedRequest.topic);
+    console.log('Sending Webhook Payload:', JSON.stringify(sanitizedRequest, null, 2));
+
+    try {
+        const response = await fetch('https://talha2408.app.n8n.cloud/webhook/generate-diagram', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // mode: 'cors', // Assuming explicit CORS is desired, default is usually 'cors' in fetch
+            body: JSON.stringify(sanitizedRequest),
+        });
+
+
+        if (!response.ok) {
+            throw new Error(`Diagram webhook failed with status: ${response.status}`);
+        }
+
+        // The user said "Let the user_diagram do it works as it does... we don't care"
+        // So we just return success if the hook fired.
+        const responseText = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            data = { message: responseText };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Generate diagram failed:', error);
         throw error;
     }
 }

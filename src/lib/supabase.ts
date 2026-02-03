@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables. Please check your .env file.');
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    console.warn('⚠️ Missing Supabase environment variables. Using placeholder values to prevent crash.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -65,28 +65,31 @@ export const createStudyMaterial = async (
     title: string,
     originalText: string,
     structuredContent: string,
-    quizData?: any[],
-    mermaidCode?: string
+    quizData?: any[]
 ) => {
     const { data, error } = await supabase
         .from('study_materials')
         .insert({
             user_id: userId,
-            title,
+            title: title,
             original_text: originalText,
             structured_content: structuredContent,
             quiz_data: quizData || null,
-            mermaid_code: mermaidCode || null,
         })
         .select()
         .single();
     return { data, error };
 };
 
-export const updateQuizScore = async (materialId: string, score: number) => {
+export const updateQuizResult = async (materialId: string, score: number, quizData?: any[]) => {
+    const updatePayload: any = { quiz_score: score };
+    if (quizData) {
+        updatePayload.quiz_data = quizData;
+    }
+
     const { error } = await supabase
         .from('study_materials')
-        .update({ quiz_score: score })
+        .update(updatePayload)
         .eq('id', materialId);
     return { error };
 };

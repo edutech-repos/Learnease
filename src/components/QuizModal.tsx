@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle, XCircle, Loader2, Trophy, RotateCcw, ArrowRight } from 'lucide-react';
 import { QuizQuestion, generateQuiz, generateQuizMock, GenerateQuizRequest } from '../lib/api';
+import { updateQuizResult } from '../lib/supabase';
 
 interface QuizModalProps {
     isOpen: boolean;
@@ -9,9 +10,10 @@ interface QuizModalProps {
     textContent: string;
     userId: string;
     initialData?: { question: string; options: string[]; answer: string }[];
+    materialId?: string; // Add materialId to support saving scores
 }
 
-export function QuizModal({ isOpen, onClose, textContent, userId, initialData }: QuizModalProps) {
+export function QuizModal({ isOpen, onClose, textContent, userId, initialData, materialId }: QuizModalProps) {
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>([]);
@@ -73,20 +75,6 @@ export function QuizModal({ isOpen, onClose, textContent, userId, initialData }:
         setSelectedAnswers(newAnswers);
     };
 
-    const nextQuestion = () => {
-        if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-        } else {
-            setShowResults(true);
-        }
-    };
-
-    const prevQuestion = () => {
-        if (currentQuestion > 0) {
-            setCurrentQuestion(currentQuestion - 1);
-        }
-    };
-
     const calculateScore = () => {
         let correct = 0;
         questions.forEach((q, idx) => {
@@ -95,6 +83,52 @@ export function QuizModal({ isOpen, onClose, textContent, userId, initialData }:
             }
         });
         return correct;
+    };
+
+    const finishQuiz = async () => {
+        setShowResults(true);
+
+        if (materialId) {
+            // Calculate final score
+            let correct = 0;
+            questions.forEach((q, idx) => {
+                if (selectedAnswers[idx] === q.correctAnswer) {
+                    correct++;
+                }
+            });
+
+            console.log(`Saving quiz result: Score ${correct}, Questions ${questions.length}`);
+            try {
+                // Map internal QuizQuestion format back to stored format if needed, 
+                // or just store the questions as is. 
+                // `questions` has { id, question, options, correctAnswer (index) }
+                // DB expects { question, options, answer (string) } usually based on `initialData` type in props.
+                // Let's convert it to match the expected `initialData` format for consistency.
+                const quizDataToSave = questions.map(q => ({
+                    question: q.question,
+                    options: q.options,
+                    answer: q.options[q.correctAnswer]
+                }));
+
+                await updateQuizResult(materialId, correct, quizDataToSave);
+            } catch (err) {
+                console.error("Failed to save quiz result:", err);
+            }
+        }
+    };
+
+    const nextQuestion = () => {
+        if (currentQuestion < questions.length - 1) {
+            setCurrentQuestion(currentQuestion + 1);
+        } else {
+            finishQuiz();
+        }
+    };
+
+    const prevQuestion = () => {
+        if (currentQuestion > 0) {
+            setCurrentQuestion(currentQuestion - 1);
+        }
     };
 
     const resetQuiz = () => {

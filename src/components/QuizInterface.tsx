@@ -3,7 +3,7 @@ import { ArrowLeft, Check, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface QuizInterfaceProps {
-  lessonId: number;
+  lessonId: string;
   onBack: () => void;
   onComplete: () => void;
 }
@@ -209,9 +209,8 @@ export function QuizInterface({ lessonId, onBack, onComplete }: QuizInterfacePro
                       animate={{ pathLength: percentage / 100 }}
                       transition={{ duration: 1.5, delay: 0.7, ease: 'easeOut' }}
                       style={{
-                        filter: `drop-shadow(0 0 10px ${
-                          percentage >= 80 ? '#10B981' : percentage >= 60 ? '#FBBF24' : '#F472B6'
-                        })`
+                        filter: `drop-shadow(0 0 10px ${percentage >= 80 ? '#10B981' : percentage >= 60 ? '#FBBF24' : '#F472B6'
+                          })`
                       }}
                     />
                   </svg>
@@ -227,9 +226,8 @@ export function QuizInterface({ lessonId, onBack, onComplete }: QuizInterfacePro
                       {score}/{quiz.questions.length}
                     </motion.div>
                     <motion.div
-                      className={`text-xl ${
-                        percentage >= 80 ? 'text-[#10B981]' : percentage >= 60 ? 'text-[#FBBF24]' : 'text-[#F472B6]'
-                      }`}
+                      className={`text-xl ${percentage >= 80 ? 'text-[#10B981]' : percentage >= 60 ? 'text-[#FBBF24]' : 'text-[#F472B6]'
+                        }`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 1.4 }}
@@ -247,7 +245,7 @@ export function QuizInterface({ lessonId, onBack, onComplete }: QuizInterfacePro
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.6 }}
               >
-                {percentage >= 80 
+                {percentage >= 80
                   ? 'Excellent work! You\'ve mastered this topic! 🌟'
                   : percentage >= 60
                     ? 'Good job! Keep practicing to improve further. 📚'
@@ -391,21 +389,19 @@ export function QuizInterface({ lessonId, onBack, onComplete }: QuizInterfacePro
                   <motion.button
                     key={idx}
                     onClick={() => handleAnswerSelect(idx)}
-                    className={`w-full p-5 rounded-xl border-2 text-left transition-all relative overflow-hidden group ${
-                      selectedAnswer === idx
+                    className={`w-full p-5 rounded-xl border-2 text-left transition-all relative overflow-hidden group ${selectedAnswer === idx
                         ? 'border-[#06B6D4] bg-[#06B6D4]/10 glow-cyan'
                         : 'border-[#06B6D4]/30 bg-[#1E1B4B] hover:border-[#06B6D4]/60 hover:bg-[#06B6D4]/5'
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.01, x: 5 }}
                     whileTap={{ scale: 0.99 }}
                   >
                     {/* Selection Indicator */}
                     <div className="flex items-center gap-4">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        selectedAnswer === idx
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedAnswer === idx
                           ? 'border-[#06B6D4] bg-[#06B6D4]'
                           : 'border-gray-500'
-                      }`}>
+                        }`}>
                         {selectedAnswer === idx && (
                           <motion.div
                             initial={{ scale: 0 }}
@@ -416,10 +412,9 @@ export function QuizInterface({ lessonId, onBack, onComplete }: QuizInterfacePro
                           </motion.div>
                         )}
                       </div>
-                      
-                      <span className={`text-base lg:text-lg ${
-                        selectedAnswer === idx ? 'text-white' : 'text-gray-300'
-                      }`}>
+
+                      <span className={`text-base lg:text-lg ${selectedAnswer === idx ? 'text-white' : 'text-gray-300'
+                        }`}>
                         {option}
                       </span>
                     </div>

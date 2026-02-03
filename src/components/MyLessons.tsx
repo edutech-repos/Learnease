@@ -1,224 +1,141 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, Gamepad2, Download, ArrowLeftRight, X, FileText, Sparkles } from 'lucide-react';
+import { Eye, Gamepad2, Download, ArrowLeftRight, X, FileText, Sparkles, Loader2 } from 'lucide-react';
 import { NavigationLayout } from './NavigationLayout';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchStudyMaterials } from '../lib/supabase';
+import { QuizModal } from './QuizModal';
 
 interface MyLessonsProps {
   userName: string;
   userType: 'premium' | 'free' | null;
+  userId?: string;
   onNavigate: (screen: any) => void;
   onShowProfile: () => void;
   onLogout: () => void;
-  onViewLesson?: (lessonId: number) => void;
-  onStartQuiz?: (lessonId: number) => void;
+  onViewLesson?: (lessonId: string) => void;
+  onStartQuiz?: (lessonId: string) => void;
 }
 
 export function MyLessons({
   userName,
   userType,
+  userId,
   onNavigate,
   onShowProfile,
   onLogout,
   onViewLesson,
   onStartQuiz
 }: MyLessonsProps) {
-  const lessons = [
-    {
-      id: 1,
-      title: 'Introduction to Thermodynamics',
-      subject: 'Physics',
-      icon: '🔥',
-      quizTaken: true,
-      score: 4,
-      total: 5,
-      color: '#06B6D4',
-      originalContent: 'Thermodynamics is the study of heat, work, temperature, and energy. The four laws govern how energy moves and transforms in physical systems.',
-      generatedContent: `# Introduction to Thermodynamics
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-## The Four Laws
+  useEffect(() => {
+    async function loadLessons() {
+      if (userId) {
+        setIsLoading(true);
+        const { data, error } = await fetchStudyMaterials(userId);
+        if (data) {
+          // Map Supabase data to component state
+          const mappedLessons = data.map((item: any) => {
+            // Logic: If quiz_data exists and has questions, quiz is valid/completed.
+            // If quiz_data is null or empty array, it is pending.
+            const hasQuizData = item.quiz_data && Array.isArray(item.quiz_data) && item.quiz_data.length > 0;
 
-### Zeroth Law
-Thermal equilibrium is transitive
-
-### First Law
-Energy cannot be created or destroyed
-- ΔU = Q - W
-
-### Second Law
-Entropy always increases
-
-### Third Law
-As T → 0K, entropy → 0
-
-## Applications
-- Heat engines
-- Refrigeration
-- Weather patterns`
-    },
-    {
-      id: 2,
-      title: 'Photosynthesis & Plant Biology',
-      subject: 'Biology',
-      icon: '🌱',
-      quizTaken: true,
-      score: 5,
-      total: 5,
-      color: '#10B981',
-      originalContent: 'Plants convert sunlight, water, and carbon dioxide into glucose and oxygen through photosynthesis. This process occurs in chloroplasts.',
-      generatedContent: `# Photosynthesis & Plant Biology
-
-## The Process
-
-### Light Reactions
-- Occur in thylakoid membranes
-- Produce ATP and NADPH
-
-### Calvin Cycle
-- Occurs in stroma
-- Fixes CO2 into glucose
-
-## Key Equation
-6CO2 + 6H2O + light → C6H12O6 + 6O2
-
-## Importance
-- Produces oxygen
-- Base of food chains`
-    },
-    {
-      id: 3,
-      title: 'The French Revolution',
-      subject: 'History',
-      icon: '🇫🇷',
-      quizTaken: true,
-      score: 5,
-      total: 5,
-      color: '#F472B6',
-      originalContent: 'The French Revolution (1789-1799) was a period of political and societal change in France. It began with the Estates General of 1789 and ended with the formation of the French Consulate.',
-      generatedContent: `# The French Revolution
-
-## Causes
-- Financial crisis
-- Social inequality
-- Enlightenment ideas
-
-## Key Events
-
-### 1789
-- Storming of the Bastille
-- Declaration of Rights of Man
-
-### 1793-1794
-- Reign of Terror
-- Execution of Louis XVI
-
-## Outcomes
-- End of absolute monarchy
-- Rise of Napoleon`
-    },
-    {
-      id: 4,
-      title: 'Quadratic Equations Fundamentals',
-      subject: 'Mathematics',
-      icon: '📐',
-      quizTaken: true,
-      score: 3,
-      total: 5,
-      color: '#FBBF24',
-      originalContent: 'A quadratic equation is a second-degree polynomial equation in a single variable x: ax² + bx + c = 0, where a ≠ 0.',
-      generatedContent: `# Quadratic Equations
-
-## Standard Form
-ax² + bx + c = 0 (where a ≠ 0)
-
-## Solution Methods
-
-### Quadratic Formula
-x = (-b ± √(b²-4ac)) / 2a
-
-### Factoring
-- Find two numbers that multiply to ac and add to b
-
-### Completing the Square
-- Rewrite in vertex form
-
-## Discriminant
-- b²-4ac > 0: Two real solutions
-- b²-4ac = 0: One solution
-- b²-4ac < 0: Complex solutions`
-    },
-    {
-      id: 5,
-      title: 'Python Functions & Methods',
-      subject: 'Programming',
-      icon: '🐍',
-      quizTaken: true,
-      score: 3,
-      total: 5,
-      color: '#8B5CF6',
-      originalContent: 'Functions in Python are defined using the def keyword. They can accept parameters, have default values, and return values using the return statement.',
-      generatedContent: `# Python Functions & Methods
-
-## Defining Functions
-\`\`\`python
-def greet(name):
-    return f"Hello, {name}!"
-\`\`\`
-
-## Parameters
-- Positional arguments
-- Keyword arguments
-- *args and **kwargs
-
-## Lambda Functions
-\`\`\`python
-square = lambda x: x**2
-\`\`\`
-
-## Built-in Methods
-- len(), type(), print()
-- List methods: append(), pop()`
-    },
-    {
-      id: 6,
-      title: 'Shakespeare\'s Tragedies',
-      subject: 'Literature',
-      icon: '📚',
-      quizTaken: true,
-      score: 4,
-      total: 5,
-      color: '#EC4899',
-      originalContent: 'Hamlet, Macbeth, Othello, and King Lear represent Shakespeare\'s greatest tragic works. These plays explore themes of ambition, jealousy, betrayal, and the human condition.',
-      generatedContent: `# Shakespeare's Tragedies
-
-## Overview
-Shakespeare wrote four major tragedies that are considered masterpieces of English literature.
-
-### Hamlet
-- Theme: Revenge, mortality, and madness
-- Famous quote: "To be or not to be"
-
-### Macbeth
-- Theme: Ambition, guilt, and fate
-- The corrupting power of unchecked ambition
-
-### Othello
-- Theme: Jealousy, race, and manipulation
-- Iago's manipulation leads to tragedy
-
-### King Lear
-- Theme: Family, power, and aging
-- A father's tragic misjudgment
-
-## Key Takeaways
-- All tragedies feature a fatal flaw in the protagonist
-- Themes remain relevant to modern audiences`
+            return {
+              id: item.id,
+              title: item.title || 'Untitled Lesson',
+              subject: 'General', // We might want to save/fetch topic in future
+              icon: '⚡️',
+              // User logic: check quiz_data column. If [], then pending. Else completed.
+              quizTaken: hasQuizData,
+              score: item.quiz_score || 0,
+              total: hasQuizData ? item.quiz_data.length : 5, // Default to 5 if pending? Or 0?
+              color: '#06B6D4',
+              generatedContent: item.structured_content || '',
+              originalContent: item.original_text || '',
+              quizData: item.quiz_data // Store quiz data for modal
+            };
+          });
+          setLessons(mappedLessons);
+        }
+        setIsLoading(false);
+      }
     }
-  ];
+    loadLessons();
+  }, [userId]);
 
-  const [selectedLessonForPreview, setSelectedLessonForPreview] = useState<number | null>(null);
+
+  // Ensure ID type is string to match Supabase UUIDs
+  const [selectedLessonForPreview, setSelectedLessonForPreview] = useState<string | null>(null);
   const [showAfterContent, setShowAfterContent] = useState(true);
+  const [quizLessonId, setQuizLessonId] = useState<string | null>(null);
 
   const selectedLesson = lessons.find(l => l.id === selectedLessonForPreview);
+  const quizLesson = lessons.find(l => l.id === quizLessonId);
+
+  const handleDownloadAll = () => {
+    if (lessons.length === 0) {
+      alert("No lessons to download.");
+      return;
+    }
+
+    const date = new Date().toLocaleDateString();
+
+    let htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Learnease Notes Bundle - ${date}</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; mx-auto; padding: 20px; color: #1f2937; }
+          h1 { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; color: #111827; }
+          h2 { margin-top: 40px; color: #1e3a8a; border-left: 5px solid #06b6d4; padding-left: 10px; }
+          .meta { color: #6b7280; font-size: 0.9em; margin-bottom: 20px; }
+          .lesson-content { background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; }
+          .toc { background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 40px; }
+          .toc a { text-decoration: none; color: #2563eb; display: block; margin-bottom: 5px; }
+          .toc a:hover { text-decoration: underline; }
+          @media print { .page-break { page-break-after: always; } }
+        </style>
+      </head>
+      <body>
+        <h1>Learnease Study Notes</h1>
+        <p>Generated on ${date}</p>
+        
+        <div class="toc">
+          <h3>Table of Contents</h3>
+          ${lessons.map((l, i) => `<a href="#lesson-${i}">${i + 1}. ${l.title}</a>`).join('')}
+        </div>
+    `;
+
+    lessons.forEach((lesson, index) => {
+      htmlContent += `
+        <div id="lesson-${index}" class="page-break">
+          <h2>${lesson.title}</h2>
+          <div class="meta">
+            <strong>Subject:</strong> ${lesson.subject} | 
+            <strong>Score:</strong> ${lesson.score}/${lesson.total}
+          </div>
+          <div class="lesson-content">
+            ${lesson.generatedContent || lesson.originalContent || '<p>No content.</p>'}
+          </div>
+          <hr style="margin: 40px 0; border: 0; border-top: 1px dashed #ccc;" />
+        </div>
+      `;
+    });
+
+    htmlContent += `</body></html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Learnease_Notes_${new Date().toISOString().slice(0, 10)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <NavigationLayout
@@ -239,7 +156,7 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
             </p>
           </div>
           <motion.button
-            onClick={() => alert('Downloading all lessons as PDF bundle... (Mock Action)')}
+            onClick={handleDownloadAll}
             className="flex items-center gap-2 px-6 py-3 bg-[#312E81] border border-[#06B6D4]/50 rounded-xl text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -251,7 +168,15 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
 
         {/* Lessons Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {lessons.map((lesson, idx) => (
+          {isLoading ? (
+            <div className="col-span-full flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#06B6D4]" />
+            </div>
+          ) : lessons.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-400">
+              <p>No lessons found. Create your first lesson!</p>
+            </div>
+          ) : lessons.map((lesson, idx) => (
             <motion.div
               key={lesson.id}
               className="bg-[#312E81] rounded-xl p-6 border-2 border-[#06B6D4]/30 hover:border-[#06B6D4] transition-all relative overflow-hidden group"
@@ -345,7 +270,7 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
                   </motion.button>
 
                   <motion.button
-                    onClick={() => onStartQuiz?.(lesson.id)}
+                    onClick={() => setQuizLessonId(lesson.id)}
                     className="flex-1 py-2.5 bg-gradient-to-r from-[#F472B6] to-[#EC4899] rounded-lg text-white flex items-center justify-center gap-2 relative overflow-hidden group/btn"
                     whileHover={{
                       scale: 1.02,
@@ -403,12 +328,12 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
             </div>
             <div className="text-center">
               <div className="text-3xl text-[#F472B6] mb-1">
-                {Math.round(
-                  lessons
-                    .filter(l => l.quizTaken)
-                    .reduce((acc, l) => acc + (l.score! / l.total!) * 100, 0) /
-                  lessons.filter(l => l.quizTaken).length
-                )}%
+                {(() => {
+                  const completed = lessons.filter(l => l.quizTaken);
+                  if (completed.length === 0) return '0%';
+                  const avg = completed.reduce((acc, l) => acc + (l.score / l.total) * 100, 0) / completed.length;
+                  return `${Math.round(avg)}%`;
+                })()}
               </div>
               <div className="text-gray-400 text-sm">Average Score</div>
             </div>
@@ -420,27 +345,32 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
       <AnimatePresence>
         {selectedLesson && (
           <motion.div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedLessonForPreview(null)}
           >
             <motion.div
-              className="bg-[#312E81] rounded-3xl max-w-4xl w-full border-2 border-[#06B6D4]/50 relative flex flex-col max-h-[85vh] min-h-0 overflow-hidden"
+              className="bg-[#312E81] rounded-3xl max-w-4xl w-full border-2 border-[#06B6D4]/50 relative flex flex-col h-[85vh] overflow-hidden shadow-2xl"
               initial={{ opacity: 0, scale: 0.9, y: 50 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 50 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="flex-shrink-0 bg-[#312E81] border-b border-[#06B6D4]/30 p-4 lg:p-6">
+              <div className="flex-shrink-0 bg-[#312E81] border-b border-[#06B6D4]/30 p-4 lg:p-6 z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{selectedLesson.icon}</span>
                     <div>
-                      <h2 className="text-xl text-white">{selectedLesson.title}</h2>
-                      <p className="text-sm text-gray-400">{selectedLesson.subject} • Before/After Comparison</p>
+                      <h2 className="text-xl text-white font-bold">{selectedLesson.title}</h2>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <span>{selectedLesson.subject}</span>
+                        {selectedLesson.quizTaken && (
+                          <span className="text-[#10B981] font-medium">• Score: {selectedLesson.score}/{selectedLesson.total}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <motion.button
@@ -494,7 +424,22 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
               </div>
 
               {/* Content Area - Scrollable */}
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 lg:p-6">
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar text-white">
+                <style>{`
+                  .custom-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(30, 27, 75, 0.5);
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(6, 182, 212, 0.5);
+                    border-radius: 4px;
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(6, 182, 212, 0.8);
+                  }
+                `}</style>
                 <motion.div
                   key={showAfterContent ? 'after' : 'before'}
                   initial={{ opacity: 0, x: showAfterContent ? 20 : -20 }}
@@ -502,65 +447,29 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
                   exit={{ opacity: 0, x: showAfterContent ? -20 : 20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {showAfterContent ? (
-                    <div className="prose prose-invert max-w-none">
-                      {selectedLesson.generatedContent?.split('\n').map((line, idx) => {
-                        if (line.startsWith('# ')) {
-                          return (
-                            <h1 key={idx} className="text-2xl text-white mb-4 mt-6 first:mt-0">
-                              {line.replace('# ', '')}
-                            </h1>
-                          );
-                        }
-                        if (line.startsWith('## ')) {
-                          return (
-                            <h2 key={idx} className="text-xl text-[#06B6D4] mb-3 mt-5 flex items-center gap-2">
-                              <span className="w-1.5 h-6 bg-[#06B6D4] rounded-full" />
-                              {line.replace('## ', '')}
-                            </h2>
-                          );
-                        }
-                        if (line.startsWith('### ')) {
-                          return (
-                            <h3 key={idx} className="text-lg text-[#F472B6] mb-2 mt-4">
-                              {line.replace('### ', '')}
-                            </h3>
-                          );
-                        }
-                        if (line.startsWith('- ')) {
-                          return (
-                            <div key={idx} className="flex items-start gap-2 mb-2 ml-4">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#FBBF24] mt-2" />
-                              <p className="text-gray-300">{line.replace('- ', '')}</p>
-                            </div>
-                          );
-                        }
-                        if (line.trim()) {
-                          return (
-                            <p key={idx} className="text-gray-300 mb-3 leading-relaxed">
-                              {line}
-                            </p>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  ) : (
-                    <div className="bg-[#1E1B4B] rounded-xl p-6 border border-[#06B6D4]/20">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FileText className="w-5 h-5 text-[#06B6D4]" />
-                        <span className="text-sm text-[#06B6D4] font-medium">Original Input</span>
+                  <div className="prose prose-invert max-w-none">
+                    {showAfterContent ? (
+                      <div
+                        className="text-gray-300"
+                        dangerouslySetInnerHTML={{ __html: selectedLesson.generatedContent || '<p>No content available</p>' }}
+                      />
+                    ) : (
+                      <div className="bg-[#1E1B4B] rounded-xl p-6 border border-[#06B6D4]/20">
+                        <div className="flex items-center gap-2 mb-4">
+                          <FileText className="w-5 h-5 text-[#06B6D4]" />
+                          <span className="text-sm text-[#06B6D4] font-medium">Original Input</span>
+                        </div>
+                        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          {selectedLesson.originalContent || 'No original content available'}
+                        </p>
                       </div>
-                      <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {selectedLesson.originalContent || 'No original content available'}
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </motion.div>
               </div>
 
               {/* Footer Actions */}
-              <div className="flex-shrink-0 bg-[#312E81] border-t border-[#06B6D4]/30 p-4 flex justify-end gap-3">
+              <div className="flex-shrink-0 bg-[#312E81] border-t border-[#06B6D4]/30 p-4 flex justify-end gap-3 z-10">
                 <motion.button
                   onClick={() => setSelectedLessonForPreview(null)}
                   className="px-6 py-2 bg-[#1E1B4B] border border-[#06B6D4]/30 rounded-lg text-gray-300 hover:text-white transition-colors"
@@ -585,6 +494,17 @@ Shakespeare wrote four major tragedies that are considered masterpieces of Engli
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Quiz Modal */}
+      {quizLesson && (
+        <QuizModal
+          isOpen={!!quizLesson}
+          onClose={() => setQuizLessonId(null)}
+          textContent={quizLesson.originalContent || ''}
+          userId={userId || ''}
+          initialData={quizLesson.quizData}
+          materialId={quizLesson.id}
+        />
+      )}
     </NavigationLayout>
   );
 }

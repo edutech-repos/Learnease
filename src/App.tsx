@@ -20,7 +20,7 @@ export default function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
-  const [currentLessonId, setCurrentLessonId] = useState<number | null>(null);
+  const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [selectedTrendingTopic, setSelectedTrendingTopic] = useState<any>(null);
 
   const handleLogin = (email: string, isPremium: boolean, id: string) => {
@@ -44,12 +44,12 @@ export default function App() {
     setCurrentLessonId(null);
   };
 
-  const handleViewLesson = (lessonId: number) => {
+  const handleViewLesson = (lessonId: string) => {
     setCurrentLessonId(lessonId);
     setCurrentScreen('content-review');
   };
 
-  const handleStartQuiz = (lessonId: number) => {
+  const handleStartQuiz = (lessonId: string) => {
     setCurrentLessonId(lessonId);
     setCurrentScreen('quiz');
   };
@@ -61,7 +61,7 @@ export default function App() {
 
   const handleIgniteLesson = () => {
     // Navigate to content review with a mock lesson ID
-    setCurrentLessonId(1);
+    // setCurrentLessonId('mock-id'); // Removed mock ID usage
     setCurrentScreen('content-review');
   };
 
@@ -73,6 +73,9 @@ export default function App() {
     setSelectedTrendingTopic(topic);
     setCurrentScreen('trending-topic');
   };
+
+  console.log("App.tsx: Rendering App component");
+  console.log("App.tsx: Current screen:", currentScreen);
 
   return (
     <div className="min-h-screen">
@@ -106,7 +109,6 @@ export default function App() {
           onStartQuiz={handleStartQuiz}
         />
       )}
-
       {currentScreen === 'lessons' && (
         <MyLessons
           onNavigate={setCurrentScreen}
@@ -114,6 +116,7 @@ export default function App() {
           onLogout={handleLogout}
           userName={userName}
           userType={userType}
+          userId={userId || undefined}
           onViewLesson={handleViewLesson}
           onStartQuiz={handleStartQuiz}
         />
@@ -156,6 +159,7 @@ export default function App() {
           onLogout={handleLogout}
           userName={userName}
           userType={userType}
+          userId={userId || undefined}
         />
       )}
 

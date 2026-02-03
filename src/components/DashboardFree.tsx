@@ -18,7 +18,7 @@ interface DashboardFreeProps {
   onIgniteLesson?: () => void;
   onShowComparison?: () => void;
   onViewTrendingTopic?: (topic: any) => void;
-  onStartQuiz?: (lessonId: number) => void;
+  onStartQuiz?: (lessonId: string) => void;
 }
 
 export function DashboardFree({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison, onViewTrendingTopic, onStartQuiz }: DashboardFreeProps) {

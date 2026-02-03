@@ -1,73 +1,104 @@
 import { motion } from 'motion/react';
-import { ArrowLeft, Gamepad2, Image, X, Download, FileText, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Gamepad2, Image, X, Download, FileText, Sparkles, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { fetchStudyMaterial } from '../lib/supabase';
+import { getDiagramUrl, generateDiagram } from '../lib/api';
 
 interface ContentReviewProps {
-  lessonId: number;
+  lessonId: string;
   onBack: () => void;
   onStartQuiz: () => void;
   userType?: 'premium' | 'free' | null;
   originalContent?: string;
 }
 
-export function ContentReview({ onBack, onStartQuiz, userType = 'free', originalContent }: ContentReviewProps) {
+export function ContentReview({ onBack, onStartQuiz, userType = 'free', originalContent, lessonId }: ContentReviewProps) {
   const [showDiagram, setShowDiagram] = useState(false);
   const [diagramsRemaining, setDiagramsRemaining] = useState(
     userType === 'premium' ? 30 : 5
   );
   const [showAfterContent, setShowAfterContent] = useState(true);
-  // Mock lesson data - in real app this would come from props or API
-  const lessonContent = {
-    title: 'Introduction to Thermodynamics',
-    subject: 'Physics',
-    icon: '🔥',
-    content: `
-# What is Thermodynamics?
+  const [lessonData, setLessonData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [diagramUrl, setDiagramUrl] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-Thermodynamics is the branch of physics that deals with heat, work, temperature, and the statistical behavior of systems with a large number of particles.
+  useEffect(() => {
+    async function loadLesson() {
+      if (lessonId) {
+        setIsLoading(true);
+        try {
+          const { data, error } = await fetchStudyMaterial(lessonId.toString());
+          // Debug check for the user
+          console.log('Fetched lesson data:', data);
+          if (data) {
+            setLessonData(data);
+            // Strict check: Ensure image_path is actually a valid path string (case-insensitive)
+            // Handle "NULL", "Null", "null", "undefined", etc.
+            const imgPath = data.image_path ? String(data.image_path).trim() : "";
+            const lowerPath = imgPath.toLowerCase();
 
-## The Four Laws of Thermodynamics
+            if (imgPath.length > 0 && lowerPath !== "null" && lowerPath !== "undefined") {
+              console.log('Found diagram path:', data.image_path);
+              setDiagramUrl(getDiagramUrl(data.image_path));
+            } else {
+              console.log('No valid diagram path found (invalid value:', data.image_path, ')');
+              setDiagramUrl(null);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load lesson", err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadLesson();
+  }, [lessonId]);
 
-### Zeroth Law
-If two systems are each in thermal equilibrium with a third system, they are in thermal equilibrium with each other. This law helps define the notion of temperature.
+  const handleGenerateDiagram = async () => {
+    if (diagramsRemaining <= 0 || isGenerating) return;
 
-### First Law (Conservation of Energy)
-Energy cannot be created or destroyed in an isolated system. The total energy of an isolated system remains constant.
+    // If we already have a URL, just show it. 
+    // BUT the user specifically wants to "connect to the new workflow".
+    // If diagramUrl exists, maybe we shouldn't regenerate? 
+    // The user said "connect Generate Diagram button to the new workflow". 
+    // I will assume if no diagram exists, we generate. If it exists, we show.
 
-**Key Points:**
-- Energy can only be transformed from one form to another
-- ΔU = Q - W (Change in internal energy = Heat added - Work done)
-- This is essentially the law of conservation of energy
+    if (diagramUrl) {
+      setShowDiagram(true);
+      return;
+    }
 
-### Second Law (Entropy)
-The entropy of any isolated system always increases over time. Heat naturally flows from hot to cold objects.
+    setIsGenerating(true);
+    try {
+      if (!lessonData) {
+        alert("Lesson data not loaded yet.");
+        return;
+      }
 
-**Important Concepts:**
-- Entropy measures the disorder or randomness in a system
-- Natural processes are irreversible
-- Heat engines cannot be 100% efficient
-- Carnot efficiency sets the theoretical maximum
+      // Construct payload from lessonData
+      const payload = {
+        userId: lessonData.user_id || 'unknown', // Fallback
+        topic: lessonData.title || 'Untitled',
+        htmlContent: lessonData.structured_content || '',
+        textContent: lessonData.original_text || '',
+        mcqs: lessonData.quiz_data || []
+      };
 
-### Third Law
-As temperature approaches absolute zero (0 Kelvin), the entropy of a perfect crystal approaches zero.
+      await generateDiagram(payload);
 
-## Real-World Applications
+      setDiagramsRemaining(prev => prev - 1);
+      alert("Diagram generation started! It will appear specifically in your dedicated diagrams dashboard (or verify via Supabase).");
+      // We could poll for the new image or just show success. 
+      // As per user "let user_diagram do it works... connect and make it working first"
 
-- **Heat Engines**: Cars, power plants, jet engines
-- **Refrigeration**: Air conditioners, refrigerators
-- **Weather Patterns**: Understanding atmospheric thermodynamics
-- **Chemical Reactions**: Predicting reaction spontaneity
-
-## Key Formulas
-
-1. **First Law**: ΔU = Q - W
-2. **Carnot Efficiency**: η = 1 - (T_cold / T_hot)
-3. **Ideal Gas Law**: PV = nRT
-
-## Summary
-
-Thermodynamics governs how energy moves and transforms in physical systems. Understanding these principles is crucial for engineering, chemistry, and understanding natural phenomena.
-    `
+    } catch (error) {
+      console.error("Failed to generate diagram:", error);
+      alert("Failed to trigger diagram generation. See console.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -88,10 +119,12 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{lessonContent.icon}</span>
+                  <span className="text-3xl">{'⚡️'}</span>
                   <div>
-                    <h1 className="text-xl lg:text-2xl text-white">{lessonContent.title}</h1>
-                    <p className="text-sm text-gray-400">{lessonContent.subject} Notes</p>
+                    <h1 className="text-xl lg:text-2xl text-white">
+                      {isLoading ? 'Loading...' : (lessonData?.topic || lessonData?.title || 'Untitled Lesson')}
+                    </h1>
+                    <p className="text-sm text-gray-400">Lesson Review</p>
                   </div>
                 </div>
 
@@ -182,104 +215,109 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
           >
             {/* Rich Text Content */}
             <div className="prose prose-invert max-w-none">
-              {lessonContent.content.split('\n').map((line, idx) => {
-                // H1
-                if (line.startsWith('# ')) {
-                  return (
-                    <motion.h1
-                      key={idx}
-                      className="text-3xl lg:text-4xl text-white mb-6 mt-8 first:mt-0"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.02 }}
-                    >
-                      {line.replace('# ', '')}
-                    </motion.h1>
-                  );
-                }
+              {isLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#06B6D4]" />
+                </div>
+              ) : (lessonData?.html_content || lessonData?.structured_content || "Content not available in this view. Please check the diagram.")
+                .split('\n').map((line: string, idx: number) => {
+                  // H1
+                  if (line.startsWith('# ')) {
+                    return (
+                      <motion.h1
+                        key={idx}
+                        className="text-3xl lg:text-4xl text-white mb-6 mt-8 first:mt-0"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.02 }}
+                      >
+                        {line.replace('# ', '')}
+                      </motion.h1>
+                    );
+                  }
 
-                // H2
-                if (line.startsWith('## ')) {
-                  return (
-                    <motion.h2
-                      key={idx}
-                      className="text-2xl lg:text-3xl text-[#06B6D4] mb-4 mt-8 flex items-center gap-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.02 }}
-                    >
-                      <span className="w-2 h-8 bg-[#06B6D4] rounded-full glow-cyan" />
-                      {line.replace('## ', '')}
-                    </motion.h2>
-                  );
-                }
+                  // H2
+                  if (line.startsWith('## ')) {
+                    return (
+                      <motion.h2
+                        key={idx}
+                        className="text-2xl lg:text-3xl text-[#06B6D4] mb-4 mt-8 flex items-center gap-3"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.02 }}
+                      >
+                        <span className="w-2 h-8 bg-[#06B6D4] rounded-full glow-cyan" />
+                        {line.replace('## ', '')}
+                      </motion.h2>
+                    );
+                  }
 
-                // H3
-                if (line.startsWith('### ')) {
-                  return (
-                    <motion.h3
-                      key={idx}
-                      className="text-xl lg:text-2xl text-[#F472B6] mb-3 mt-6"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.02 }}
-                    >
-                      {line.replace('### ', '')}
-                    </motion.h3>
-                  );
-                }
+                  // H3
+                  if (line.startsWith('### ')) {
+                    return (
+                      <motion.h3
+                        key={idx}
+                        className="text-xl lg:text-2xl text-[#F472B6] mb-3 mt-6"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.02 }}
+                      >
+                        {line.replace('### ', '')}
+                      </motion.h3>
+                    );
+                  }
 
-                // Bold text
-                if (line.startsWith('**') && line.endsWith('**')) {
-                  return (
-                    <motion.p
-                      key={idx}
-                      className="text-[#FBBF24] mb-3 mt-4"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                    >
-                      {line.replace(/\*\*/g, '')}
-                    </motion.p>
-                  );
-                }
+                  // Bold text
+                  if (line.startsWith('**') && line.endsWith('**')) {
+                    return (
+                      <motion.p
+                        key={idx}
+                        className="text-[#FBBF24] mb-3 mt-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: idx * 0.02 }}
+                      >
+                        {line.replace(/\*\*/g, '')}
+                      </motion.p>
+                    );
+                  }
 
-                // Bullet points
-                if (line.startsWith('- ')) {
-                  return (
-                    <motion.div
-                      key={idx}
-                      className="flex items-start gap-3 mb-2 ml-4"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.02 }}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-[#06B6D4] mt-2 flex-shrink-0" />
-                      <p className="text-gray-300 flex-1">
-                        {line.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')}
-                      </p>
-                    </motion.div>
-                  );
-                }
+                  // Bullet points
+                  if (line.startsWith('- ')) {
+                    return (
+                      <motion.div
+                        key={idx}
+                        className="flex items-start gap-3 mb-2 ml-4"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.02 }}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#06B6D4] mt-2 flex-shrink-0" />
+                        <p className="text-gray-300 flex-1">
+                          {line.replace('- ', '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')}
+                        </p>
+                      </motion.div>
+                    );
+                  }
 
-                // Regular paragraph
-                if (line.trim() && !line.startsWith('#')) {
-                  return (
-                    <motion.p
-                      key={idx}
-                      className="text-gray-300 mb-4 leading-relaxed"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                      dangerouslySetInnerHTML={{
-                        __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-                      }}
-                    />
-                  );
-                }
+                  // Regular paragraph
+                  if (line.trim() && !line.startsWith('#')) {
+                    return (
+                      <motion.p
+                        key={idx}
+                        className="text-gray-300 mb-4 leading-relaxed"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: idx * 0.02 }}
+                        dangerouslySetInnerHTML={{
+                          __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                        }}
+                      />
+                    );
+                  }
 
-                return null;
-              })}
+                  return null;
+                })}
             </div>
           </motion.div>
         )}
@@ -316,16 +354,29 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
               </h2>
               <p className="text-gray-400 mb-6">AI-generated visual representation of the lesson concepts</p>
 
-              {/* Mock Diagram - Replace with actual diagram */}
-              <div className="bg-[#1E1B4B] rounded-xl p-8 border-2 border-[#06B6D4]/30 flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <Image className="w-24 h-24 text-[#06B6D4] mx-auto mb-4 opacity-50" />
-                  <p className="text-gray-400 text-lg">Mock Diagram Placeholder</p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    In production, this would display an AI-generated diagram<br />
-                    illustrating the thermodynamics concepts
-                  </p>
-                </div>
+              {/* Actual Diagram */}
+              <div className="bg-[#1E1B4B] rounded-xl p-4 border-2 border-[#06B6D4]/30 flex items-center justify-center min-h-[400px] overflow-auto">
+                {diagramUrl ? (
+                  <img
+                    src={diagramUrl}
+                    alt="Lesson Diagram"
+                    className="max-w-full h-auto rounded-lg shadow-lg"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Diagram+Load+Error';
+                    }}
+                  />
+                ) : (
+                  <div className="text-center">
+                    <Image className="w-24 h-24 text-[#06B6D4] mx-auto mb-4 opacity-50" />
+                    <p className="text-gray-400 text-lg">No Diagram Available</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      The diagram for this lesson could not be found.
+                      <br />
+                      Running generation workflow...
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 flex justify-between items-center">
@@ -350,19 +401,14 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
       <div className="mt-12 mb-12 flex justify-center gap-6">
         {/* Generate Diagram Button */}
         <motion.button
-          onClick={() => {
-            if (diagramsRemaining > 0) {
-              setShowDiagram(true);
-              setDiagramsRemaining(prev => prev - 1);
-            }
-          }}
+          onClick={handleGenerateDiagram}
           className={`px-6 py-4 rounded-2xl text-white shadow-xl flex items-center gap-3 relative overflow-hidden group ${diagramsRemaining > 0
             ? 'bg-gradient-to-r from-[#06B6D4] to-[#3B82F6]'
             : 'bg-gray-600 cursor-not-allowed'
             }`}
           whileHover={diagramsRemaining > 0 ? { scale: 1.05, y: -2 } : undefined}
           whileTap={diagramsRemaining > 0 ? { scale: 0.95 } : undefined}
-          disabled={diagramsRemaining === 0}
+          disabled={diagramsRemaining === 0 || isGenerating}
         >
           {diagramsRemaining > 0 && (
             <motion.div
@@ -374,11 +420,16 @@ Thermodynamics governs how energy moves and transforms in physical systems. Unde
             />
           )}
 
-          <Image className="w-5 h-5 relative z-10" />
+          {isGenerating ? (
+            <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+          ) : (
+            <Image className="w-5 h-5 relative z-10" />
+          )}
+
           <span className="relative z-10 flex flex-col items-start text-left">
-            <span className="text-sm font-semibold">Generate Diagram</span>
+            <span className="text-sm font-semibold">{diagramUrl ? 'View Diagram' : (isGenerating ? 'Generating...' : 'Generate Diagram')}</span>
             <span className={`text-xs ${diagramsRemaining > 0 ? 'text-white/80' : 'text-gray-400'}`}>
-              {diagramsRemaining > 0 ? `${diagramsRemaining} left this week` : 'Limit reached'}
+              {diagramsRemaining > 0 ? 'Click to reveal' : 'Limit reached'}
             </span>
           </span>
         </motion.button>

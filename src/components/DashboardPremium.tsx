@@ -7,6 +7,7 @@ import { igniteLesson, igniteLessonMock, saveStudyMaterial, DEFAULT_DIAGRAM_PATH
 import { extractTextFromPDF, isPDFFile } from '../lib/pdfExtractor';
 import { LoadingOverlay } from './LoadingOverlay';
 import { QuizModal } from './QuizModal';
+
 interface DashboardPremiumProps {
   userName: string;
   userId?: string;
@@ -15,7 +16,7 @@ interface DashboardPremiumProps {
   onLogout: () => void;
   onIgniteLesson?: () => void;
   onShowComparison?: () => void;
-  onStartQuiz?: (lessonId: number) => void;
+  onStartQuiz?: (lessonId: string) => void;
 }
 
 export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate, onShowProfile, onLogout, onShowComparison }: DashboardPremiumProps) {
@@ -38,6 +39,7 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedImagePath, setSavedImagePath] = useState<string | null>(null);
+  const [savedLessonId, setSavedLessonId] = useState<string | null>(null); // New state for ID
 
   const [mcqs, setMcqs] = useState<{ question: string; options: string[]; answer: string }[]>([]);
 
@@ -157,6 +159,7 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
     setApiError(null);
     setIsSaved(false);
     setSavedImagePath(null);
+    setSavedLessonId(null); // Reset ID
     setMcqs([]);
   };
 
@@ -180,6 +183,7 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
       if (response.success) {
         setIsSaved(true);
         setSavedImagePath(response.imagePath || null);
+        setSavedLessonId(response.id || null); // Capture ID
         setApiError('Content saved successfully! You can now generate diagrams.');
       }
     } catch (error) {
@@ -202,8 +206,6 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
       setShowDiagram(false);
       return;
     }
-
-
 
     setShowDiagram(true);
   };
@@ -770,6 +772,7 @@ export function DashboardPremium({ userName, userId = 'USR_TEST_001', onNavigate
         textContent={generatedContent || originalContent}
         userId={userId}
         initialData={mcqs}
+        materialId={savedLessonId || undefined}
       />
     </>
   );
